@@ -1,4 +1,3 @@
-
 #include "fastfair.h"
 #include "../../include/fastfair.hpp"
 
