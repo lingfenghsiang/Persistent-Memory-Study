@@ -1,0 +1,22 @@
+[
+{
+  "directory": "/home/xlf/Documents/eurosys22_artifact/case_study/build",
+  "command": "/bin/x86_64-linux-gnu-g++-9  -DLOAD_FILE_DIR=\\\"/home/xlf/Documents/prepare_ycsb/load.log\\\" -DPMEM_POOL_DIR=\\\"/mnt/pmem/\\\" -DPMEM_POOL_SIZE=0x400000000 -DRUN_FILE_DIR=\\\"/home/xlf/Documents/prepare_ycsb/run.log\\\" -I/src/include -I/home/xlf/Documents/MyUtils/include  -march=native -g   -o CMakeFiles/kv_test.dir/main.cpp.o -c /home/xlf/Documents/eurosys22_artifact/case_study/main.cpp",
+  "file": "/home/xlf/Documents/eurosys22_artifact/case_study/main.cpp"
+},
+{
+  "directory": "/home/xlf/Documents/eurosys22_artifact/case_study/build/external_repo/cceh/CCEH-PMDK",
+  "command": "/bin/x86_64-linux-gnu-g++-9  -DLOAD_FILE_DIR=\\\"/home/xlf/Documents/prepare_ycsb/load.log\\\" -DPMEM_POOL_DIR=\\\"/mnt/pmem/\\\" -DPMEM_POOL_SIZE=0x400000000 -DRUN_FILE_DIR=\\\"/home/xlf/Documents/prepare_ycsb/run.log\\\" -Dcceh_pmdk_EXPORTS -I/src/include -I/home/xlf/Documents/MyUtils/include -I/home/xlf/Documents/eurosys22_artifact/case_study/external_repo/cceh/CCEH-PMDK  -march=native -g -fPIC   -o CMakeFiles/cceh_pmdk.dir/src/CCEH.cpp.o -c /home/xlf/Documents/eurosys22_artifact/case_study/external_repo/cceh/CCEH-PMDK/src/CCEH.cpp",
+  "file": "/home/xlf/Documents/eurosys22_artifact/case_study/external_repo/cceh/CCEH-PMDK/src/CCEH.cpp"
+},
+{
+  "directory": "/home/xlf/Documents/eurosys22_artifact/case_study/build/external_repo/cceh/CCEH-PMDK",
+  "command": "/bin/x86_64-linux-gnu-g++-9  -DLOAD_FILE_DIR=\\\"/home/xlf/Documents/prepare_ycsb/load.log\\\" -DPMEM_POOL_DIR=\\\"/mnt/pmem/\\\" -DPMEM_POOL_SIZE=0x400000000 -DRUN_FILE_DIR=\\\"/home/xlf/Documents/prepare_ycsb/run.log\\\" -Dcceh_pmdk_EXPORTS -I/src/include -I/home/xlf/Documents/MyUtils/include -I/home/xlf/Documents/eurosys22_artifact/case_study/external_repo/cceh/CCEH-PMDK  -march=native -g -fPIC   -o CMakeFiles/cceh_pmdk.dir/wrap.cpp.o -c /home/xlf/Documents/eurosys22_artifact/case_study/external_repo/cceh/CCEH-PMDK/wrap.cpp",
+  "file": "/home/xlf/Documents/eurosys22_artifact/case_study/external_repo/cceh/CCEH-PMDK/wrap.cpp"
+},
+{
+  "directory": "/home/xlf/Documents/eurosys22_artifact/case_study/build/external_repo/fastfair",
+  "command": "/bin/x86_64-linux-gnu-g++-9  -DCLWB -DLOAD_FILE_DIR=\\\"/home/xlf/Documents/prepare_ycsb/load.log\\\" -DPMEM_POOL_DIR=\\\"/mnt/pmem/\\\" -DPMEM_POOL_SIZE=0x400000000 -DRUN_FILE_DIR=\\\"/home/xlf/Documents/prepare_ycsb/run.log\\\" -DUSE_AVX512 -Dfastfair_EXPORTS -I/src/include -I/home/xlf/Documents/MyUtils/include -I/home/xlf/Documents/eurosys22_artifact/case_study/external_repo/fastfair -I/home/xlf/Documents/eurosys22_artifact/case_study/external_repo/fastfair/.  -mavx512f -mavx512vl -mavx512bw -mavx512dq -mavx512cd -march=native -march=native -g -fPIC   -std=gnu++11 -o CMakeFiles/fastfair.dir/wrap.cpp.o -c /home/xlf/Documents/eurosys22_artifact/case_study/external_repo/fastfair/wrap.cpp",
+  "file": "/home/xlf/Documents/eurosys22_artifact/case_study/external_repo/fastfair/wrap.cpp"
+}
+]

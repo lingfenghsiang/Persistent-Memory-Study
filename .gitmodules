@@ -1,0 +1,3 @@
+[submodule "case_study/YCSB"]
+	path = case_study/YCSB
+	url = https://github.com/brianfrankcooper/YCSB.git

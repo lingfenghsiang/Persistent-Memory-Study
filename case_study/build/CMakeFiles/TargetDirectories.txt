@@ -1,0 +1,9 @@
+/home/xlf/Documents/eurosys22_artifact/case_study/build/CMakeFiles/rebuild_cache.dir
+/home/xlf/Documents/eurosys22_artifact/case_study/build/CMakeFiles/edit_cache.dir
+/home/xlf/Documents/eurosys22_artifact/case_study/build/CMakeFiles/kv_test.dir
+/home/xlf/Documents/eurosys22_artifact/case_study/build/external_repo/cceh/CCEH-PMDK/CMakeFiles/rebuild_cache.dir
+/home/xlf/Documents/eurosys22_artifact/case_study/build/external_repo/cceh/CCEH-PMDK/CMakeFiles/edit_cache.dir
+/home/xlf/Documents/eurosys22_artifact/case_study/build/external_repo/cceh/CCEH-PMDK/CMakeFiles/cceh_pmdk.dir
+/home/xlf/Documents/eurosys22_artifact/case_study/build/external_repo/fastfair/CMakeFiles/rebuild_cache.dir
+/home/xlf/Documents/eurosys22_artifact/case_study/build/external_repo/fastfair/CMakeFiles/edit_cache.dir
+/home/xlf/Documents/eurosys22_artifact/case_study/build/external_repo/fastfair/CMakeFiles/fastfair.dir

@@ -1,0 +1,264 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "external_repo/fastfair/libfastfair.so"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"link_directories",
+			"add_definitions",
+			"include",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"external_repo/fastfair/CMakeLists.txt",
+			"CMakeLists.txt",
+			"path.cmake"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 68,
+				"parent" : 0
+			},
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 26,
+				"parent" : 2
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 30,
+				"parent" : 2
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 30,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 18,
+				"parent" : 2
+			},
+			{
+				"file" : 2,
+				"parent" : 6
+			},
+			{
+				"command" : 2,
+				"file" : 2,
+				"line" : 5,
+				"parent" : 7
+			},
+			{
+				"command" : 2,
+				"file" : 2,
+				"line" : 7,
+				"parent" : 7
+			},
+			{
+				"command" : 2,
+				"file" : 2,
+				"line" : 8,
+				"parent" : 7
+			},
+			{
+				"command" : 2,
+				"file" : 2,
+				"line" : 6,
+				"parent" : 7
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 59,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 1,
+				"line" : 20,
+				"parent" : 2
+			},
+			{
+				"command" : 4,
+				"file" : 1,
+				"line" : 23,
+				"parent" : 2
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 5,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-mavx512f -mavx512vl -mavx512bw -mavx512dq -mavx512cd -march=native -march=native -g -fPIC  "
+				},
+				{
+					"fragment" : "-std=gnu++11"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 5,
+					"define" : "CLWB"
+				},
+				{
+					"backtrace" : 8,
+					"define" : "LOAD_FILE_DIR=\"/home/xlf/Documents/prepare_ycsb/load.log\""
+				},
+				{
+					"backtrace" : 9,
+					"define" : "PMEM_POOL_DIR=\"/mnt/pmem/\""
+				},
+				{
+					"backtrace" : 10,
+					"define" : "PMEM_POOL_SIZE=0x400000000"
+				},
+				{
+					"backtrace" : 11,
+					"define" : "RUN_FILE_DIR=\"/home/xlf/Documents/prepare_ycsb/run.log\""
+				},
+				{
+					"backtrace" : 12,
+					"define" : "USE_AVX512"
+				},
+				{
+					"define" : "fastfair_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 13,
+					"path" : "/src/include"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/home/xlf/Documents/MyUtils/include"
+				},
+				{
+					"backtrace" : 15,
+					"path" : "/home/xlf/Documents/eurosys22_artifact/case_study/external_repo/fastfair"
+				},
+				{
+					"backtrace" : 15,
+					"path" : "/home/xlf/Documents/eurosys22_artifact/case_study/external_repo/fastfair/."
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"id" : "fastfair::@31f47b226c7ef67d156b",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-L/src/debug",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "-L/home/xlf/Documents/MyUtils/build",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "-L/home/xlf/Documents/eurosys22_artifact/case_study/build/external_repo/cceh_mod",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "-L/home/xlf/Documents/eurosys22_artifact/case_study/build/external_repo/cceh/CCEH-PMDK",
+				"role" : "libraryPath"
+			},
+			{
+				"fragment" : "-Wl,-rpath,/src/debug:/home/xlf/Documents/MyUtils/build:/home/xlf/Documents/eurosys22_artifact/case_study/build/external_repo/cceh_mod:/home/xlf/Documents/eurosys22_artifact/case_study/build/external_repo/cceh/CCEH-PMDK",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lpthread",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lvmem",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lcrypto",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lxlf_util",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "fastfair",
+	"nameOnDisk" : "libfastfair.so",
+	"paths" : 
+	{
+		"build" : "external_repo/fastfair",
+		"source" : "external_repo/fastfair"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "external_repo/fastfair/wrap.cpp",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "SHARED_LIBRARY"
+}
