@@ -534,7 +534,7 @@ public:
     return true;
   }
 
-  __attribute__((optimize("-O0"))) inline void insert_key(btree *bt, entry_key_t key, char *ptr, int *num_entries,
+  inline void insert_key(btree *bt, entry_key_t key, char *ptr, int *num_entries,
                          bool flush = true, bool update_last_index = true) {
     // update switch_counter
     if (!IS_FORWARD(hdr.switch_counter))
