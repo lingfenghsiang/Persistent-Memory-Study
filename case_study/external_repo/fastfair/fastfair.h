@@ -520,39 +520,86 @@ public:
         if ((uint64_t) & (records[*num_entries + 1].ptr) % CACHE_LINE_SIZE == 0)
           clflush((char *)&(records[*num_entries + 1].ptr), sizeof(char *));
       }
-
+#define RAP_MOD
       // FAST
-      for (i = *num_entries - 1; i >= 0; i--) {
-        if (key < records[i].key) {
-          records[i + 1].ptr = records[i].ptr;
-          records[i + 1].key = records[i].key;
+#ifndef RAP_MOD
+      for (i = *num_entries - 1; i >= 0; i--)
+      {
+          if (key < records[i].key)
+          {
+              records[i + 1].ptr = records[i].ptr;
+              records[i + 1].key = records[i].key;
 
-          if (flush) {
-              uint64_t records_ptr = (uint64_t)(&records[i + 1]);
+              if (flush)
+              {
+                  uint64_t records_ptr = (uint64_t)(&records[i + 1]);
 
-              int remainder = records_ptr % CACHE_LINE_SIZE;
+                  int remainder = records_ptr % CACHE_LINE_SIZE;
 
-              clflush((char *)records_ptr, CACHE_LINE_SIZE);
-              to_flush_cnt = 0;
+                  clflush((char *)records_ptr, CACHE_LINE_SIZE);
+                  to_flush_cnt = 0;
+              }
           }
-        } else {
-          records[i + 1].ptr = records[i].ptr;
-          records[i + 1].key = key;
-          records[i + 1].ptr = ptr;
+          else
+          {
+              records[i + 1].ptr = records[i].ptr;
+              records[i + 1].key = key;
+              records[i + 1].ptr = ptr;
 
+              if (flush)
+                  clflush((char *)&records[i + 1], sizeof(entry));
+              inserted = 1;
+              break;
+          }
+      }
+      if (inserted == 0)
+      {
+          records[0].ptr = (char *)hdr.leftmost_ptr;
+          records[0].key = key;
+          records[0].ptr = ptr;
           if (flush)
-            clflush((char *)&records[i + 1], sizeof(entry));
-          inserted = 1;
-          break;
-        }
+              clflush((char *)&records[0], sizeof(entry));
       }
-      if (inserted == 0) {
-        records[0].ptr = (char *)hdr.leftmost_ptr;
-        records[0].key = key;
-        records[0].ptr = ptr;
-        if (flush)
-          clflush((char *)&records[0], sizeof(entry));
+#else
+      for (i = *num_entries - 1; i >= 0; i--)
+      {
+          if (key < records[i].key)
+          {
+              records[i + 1].ptr = records[i].ptr;
+              records[i + 1].key = records[i].key;
+
+              if (flush)
+              {
+                  uint64_t records_ptr = (uint64_t)(&records[i + 1]);
+
+                  int remainder = records_ptr % CACHE_LINE_SIZE;
+
+                  clflush((char *)records_ptr, CACHE_LINE_SIZE);
+                  to_flush_cnt = 0;
+              }
+          }
+          else
+          {
+              records[i + 1].ptr = records[i].ptr;
+              records[i + 1].key = key;
+              records[i + 1].ptr = ptr;
+
+              if (flush)
+                  clflush((char *)&records[i + 1], sizeof(entry));
+              inserted = 1;
+              break;
+          }
       }
+      if (inserted == 0)
+      {
+          records[0].ptr = (char *)hdr.leftmost_ptr;
+          records[0].key = key;
+          records[0].ptr = ptr;
+          if (flush)
+              clflush((char *)&records[0], sizeof(entry));
+      }
+
+#endif
     }
 
     if (update_last_index) {
