@@ -26,6 +26,10 @@
 #include <unistd.h>
 #include <vector>
 #include "persist.h"
+#define RAP_MOD
+#ifdef RAP_MOD
+#include <atomic>
+#endif
 
 #define PAGESIZE 512
 
@@ -33,6 +37,12 @@
 #define DELAY_IN_NS (1000)
 #define CACHE_LINE_SIZE 64
 #define QUERY_NUM 25
+
+#ifdef RAP_MOD
+// kv pair 16B, a cacheline could hold 4 pairs at most
+#define WR_BUF_CL_SIZE 4
+#define MAX_THREAD 100
+#endif
 
 #define IS_FORWARD(c) (c % 2 == 0)
 
@@ -58,7 +68,11 @@ unsigned long long clflush_time_in_insert = 0;
 unsigned long long update_time_in_insert = 0;
 int clflush_cnt = 0;
 int node_cnt = 0;
-
+#ifdef RAP_MOD
+__thread int thread_id = -1;
+__thread int max_cl = 0;
+std::atomic<int> thread_ids(0);
+#endif
 using namespace std;
 
 inline void mfence() { asm volatile("mfence" ::: "memory"); }
@@ -77,6 +91,10 @@ class btree {
 private:
   int height;
   char *root;
+#ifdef RAP_MOD
+  void *pmem_write_buffer_region;
+  void *dram_write_buffer_region;
+#endif
 
 public:
   btree();
@@ -136,6 +154,27 @@ public:
   friend class btree;
 };
 
+#ifdef RAP_MOD
+struct cl_buffer_entry
+{
+public:
+  // 16B
+  entry data;
+  // 8B
+  void *address;
+  // 8B
+  void *cl_addr;
+  // 32B N/A
+  char pad[32];
+};
+struct cl_merged_entry
+{
+public:
+  // 64B
+  entry data[4];
+};
+
+#endif
 const int cardinality = (PAGESIZE - sizeof(header)) / sizeof(entry);
 const int count_in_line = CACHE_LINE_SIZE / sizeof(entry);
 
@@ -368,7 +407,7 @@ public:
       if (num_entries < left_num_entries) { // left -> right
         if (hdr.leftmost_ptr == nullptr) {
           for (int i = left_num_entries - 1; i >= m; i--) {
-            insert_key(left_sibling->records[i].key,
+            insert_key(bt, left_sibling->records[i].key,
                        left_sibling->records[i].ptr, &num_entries);
           }
 
@@ -380,11 +419,11 @@ public:
 
           parent_key = records[0].key;
         } else {
-          insert_key(deleted_key_from_parent, (char *)hdr.leftmost_ptr,
+          insert_key(bt, deleted_key_from_parent, (char *)hdr.leftmost_ptr,
                      &num_entries);
 
           for (int i = left_num_entries - 1; i > m; i--) {
-            insert_key(left_sibling->records[i].key,
+            insert_key(bt, left_sibling->records[i].key,
                        left_sibling->records[i].ptr, &num_entries);
           }
 
@@ -421,12 +460,12 @@ public:
 
         if (hdr.leftmost_ptr == nullptr) {
           for (int i = 0; i < num_dist_entries; i++) {
-            left_sibling->insert_key(records[i].key, records[i].ptr,
+            left_sibling->insert_key(bt, records[i].key, records[i].ptr,
                                      &left_num_entries);
           }
 
           for (int i = num_dist_entries; records[i].ptr != NULL; i++) {
-            new_sibling->insert_key(records[i].key, records[i].ptr,
+            new_sibling->insert_key(bt, records[i].key, records[i].ptr,
                                     &new_sibling_cnt, false);
           }
 
@@ -437,11 +476,11 @@ public:
 
           parent_key = new_sibling->records[0].key;
         } else {
-          left_sibling->insert_key(deleted_key_from_parent,
+          left_sibling->insert_key(bt, deleted_key_from_parent,
                                    (char *)hdr.leftmost_ptr, &left_num_entries);
 
           for (int i = 0; i < num_dist_entries - 1; i++) {
-            left_sibling->insert_key(records[i].key, records[i].ptr,
+            left_sibling->insert_key(bt, records[i].key, records[i].ptr,
                                      &left_num_entries);
           }
 
@@ -450,7 +489,7 @@ public:
           new_sibling->hdr.leftmost_ptr =
               (page *)records[num_dist_entries - 1].ptr;
           for (int i = num_dist_entries; records[i].ptr != NULL; i++) {
-            new_sibling->insert_key(records[i].key, records[i].ptr,
+            new_sibling->insert_key(bt, records[i].key, records[i].ptr,
                                     &new_sibling_cnt, false);
           }
           clflush((char *)(new_sibling), sizeof(page));
@@ -475,11 +514,11 @@ public:
       clflush((char *)&(hdr.is_deleted), sizeof(uint8_t));
 
       if (hdr.leftmost_ptr)
-        left_sibling->insert_key(deleted_key_from_parent,
+        left_sibling->insert_key(bt, deleted_key_from_parent,
                                  (char *)hdr.leftmost_ptr, &left_num_entries);
 
       for (int i = 0; records[i].ptr != NULL; ++i) {
-        left_sibling->insert_key(records[i].key, records[i].ptr,
+        left_sibling->insert_key(bt, records[i].key, records[i].ptr,
                                  &left_num_entries);
       }
 
@@ -495,7 +534,7 @@ public:
     return true;
   }
 
-  inline void insert_key(entry_key_t key, char *ptr, int *num_entries,
+  __attribute__((optimize("-O0"))) inline void insert_key(btree *bt, entry_key_t key, char *ptr, int *num_entries,
                          bool flush = true, bool update_last_index = true) {
     // update switch_counter
     if (!IS_FORWARD(hdr.switch_counter))
@@ -520,7 +559,6 @@ public:
         if ((uint64_t) & (records[*num_entries + 1].ptr) % CACHE_LINE_SIZE == 0)
           clflush((char *)&(records[*num_entries + 1].ptr), sizeof(char *));
       }
-#define RAP_MOD
       // FAST
 #ifndef RAP_MOD
       for (i = *num_entries - 1; i >= 0; i--)
@@ -561,42 +599,84 @@ public:
               clflush((char *)&records[0], sizeof(entry));
       }
 #else
+      cl_buffer_entry *cl_buffer_entry_array = (cl_buffer_entry *)(bt->pmem_write_buffer_region) + thread_id * WR_BUF_CL_SIZE;
+      cl_buffer_entry *dram_cl_buffer_entry_array = (cl_buffer_entry *)(bt->dram_write_buffer_region) + thread_id * WR_BUF_CL_SIZE;
+      cl_merged_entry *merged_entry_array;
       for (i = *num_entries - 1; i >= 0; i--)
       {
           if (key < records[i].key)
           {
-              records[i + 1].ptr = records[i].ptr;
-              records[i + 1].key = records[i].key;
+
+if ((((uint64_t)(records + i + 1)) & 0x3f) != 0)
+                        {
+                            cl_buffer_entry_array[max_cl].data = records[i];
+                            cl_buffer_entry_array[max_cl].address = (void *)(records + i + 1);
+                            dram_cl_buffer_entry_array[max_cl].data = records[i];
+                            dram_cl_buffer_entry_array[max_cl].address = (void *)(records + i + 1);
+                            clflush((char *)(cl_buffer_entry_array + max_cl), CACHE_LINE_SIZE);
+                            max_cl++;
+                            continue;
+                        }
+                        merged_entry_array = (cl_merged_entry *)(records + i + 1);
+                        merged_entry_array->data[0] = records[i];
+
+              // records[i + 1].ptr = records[i].ptr;
+              // records[i + 1].key = records[i].key;
 
               if (flush)
               {
                   uint64_t records_ptr = (uint64_t)(&records[i + 1]);
 
                   int remainder = records_ptr % CACHE_LINE_SIZE;
+                  bool do_flush = (remainder == 0) ||
+                                  ((((int)(remainder + sizeof(entry)) / CACHE_LINE_SIZE) == 1) && ((remainder + sizeof(entry)) % CACHE_LINE_SIZE) != 0);
+                  if (do_flush)
+                  {
+                    for (int i = 0; i < max_cl; i++)
+                    {
+                      *(entry *)(dram_cl_buffer_entry_array[i].address) = dram_cl_buffer_entry_array[i].data;
+                    }
+                    clflush((char *)(merged_entry_array), sizeof(entry));
+                    max_cl = 0;
+                  }
 
-                  clflush((char *)records_ptr, CACHE_LINE_SIZE);
-                  to_flush_cnt = 0;
+                  // clflush((char *)records_ptr, CACHE_LINE_SIZE);
+                  // to_flush_cnt = 0;
+                  else
+                    ++to_flush_cnt;
               }
           }
           else
           {
-              records[i + 1].ptr = records[i].ptr;
-              records[i + 1].key = key;
-              records[i + 1].ptr = ptr;
 
-              if (flush)
-                  clflush((char *)&records[i + 1], sizeof(entry));
-              inserted = 1;
-              break;
+            for (int i = 0; i < max_cl; i++)
+            {
+              *(entry *)(dram_cl_buffer_entry_array[i].address) = dram_cl_buffer_entry_array[i].data;
+            }
+            max_cl = 0;
+
+            records[i + 1].ptr = records[i].ptr;
+            records[i + 1].key = key;
+            records[i + 1].ptr = ptr;
+
+            if (flush)
+              clflush((char *)&records[i + 1], sizeof(entry));
+            inserted = 1;
+            break;
           }
       }
       if (inserted == 0)
       {
-          records[0].ptr = (char *)hdr.leftmost_ptr;
-          records[0].key = key;
-          records[0].ptr = ptr;
-          if (flush)
-              clflush((char *)&records[0], sizeof(entry));
+        for (int i = 0; i < max_cl; i++)
+        {
+          *(entry *)(dram_cl_buffer_entry_array[i].address) = dram_cl_buffer_entry_array[i].data;
+        }
+        max_cl = 0;
+        records[0].ptr = (char *)hdr.leftmost_ptr;
+        records[0].key = key;
+        records[0].ptr = ptr;
+        if (flush)
+          clflush((char *)&records[0], sizeof(entry));
       }
 
 #endif
@@ -638,7 +718,7 @@ public:
 
     // FAST
     if (num_entries < cardinality - 1) {
-      insert_key(key, right, &num_entries, flush);
+      insert_key(bt, key, right, &num_entries, flush);
 
       if (with_lock) {
         hdr.mtx->unlock(); // Unlock the write lock
@@ -656,12 +736,12 @@ public:
       int sibling_cnt = 0;
       if (hdr.leftmost_ptr == NULL) { // leaf node
         for (int i = m; i < num_entries; ++i) {
-          sibling->insert_key(records[i].key, records[i].ptr, &sibling_cnt,
+          sibling->insert_key(bt, records[i].key, records[i].ptr, &sibling_cnt,
                               false);
         }
       } else { // internal node
         for (int i = m + 1; i < num_entries; ++i) {
-          sibling->insert_key(records[i].key, records[i].ptr, &sibling_cnt,
+          sibling->insert_key(bt, records[i].key, records[i].ptr, &sibling_cnt,
                               false);
         }
         sibling->hdr.leftmost_ptr = (page *)records[m].ptr;
@@ -690,10 +770,10 @@ public:
 
       // insert the key
       if (key < split_key) {
-        insert_key(key, right, &num_entries);
+        insert_key(bt, key, right, &num_entries);
         ret = this;
       } else {
-        sibling->insert_key(key, right, &sibling_cnt);
+        sibling->insert_key(bt, key, right, &sibling_cnt);
         ret = sibling;
       }
 
@@ -966,6 +1046,20 @@ public:
  * class btree
  */
 btree::btree() {
+#ifdef RAP_MOD
+  if ((pmem_write_buffer_region = vmem_aligned_alloc(vmp, 256, CACHE_LINE_SIZE * WR_BUF_CL_SIZE * MAX_THREAD)) == NULL)
+  {
+    perror("vmem_malloc pmem_write_buffer_region");
+    exit(1);
+  }
+  posix_memalign(&dram_write_buffer_region, 64, CACHE_LINE_SIZE * WR_BUF_CL_SIZE * MAX_THREAD);
+  if (!dram_write_buffer_region)
+  {
+    perror("malloc dram_write_buffer_region");
+    exit(1);
+  }
+#endif
+
   root = (char *)new page();
   height = 1;
 }
@@ -1001,6 +1095,12 @@ char *btree::btree_search(entry_key_t key) {
 
 // insert the key in the leaf node
 void btree::btree_insert(entry_key_t key, char *right) { // need to be string
+#ifdef RAP_MOD
+  if (thread_id == -1)
+  {
+    thread_id = thread_ids.fetch_add(1);
+  }
+#endif
   page *p = (page *)root;
 
   while (p->hdr.leftmost_ptr != NULL) {
