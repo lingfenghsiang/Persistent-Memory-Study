@@ -3,7 +3,7 @@
 
 PMEMobjpool *pop;
 TOID(CCEH) HashTable;
-void ccehpmdk::cceh::Init(std::string pool_dir, uint64_t pool_size)
+void ccehpmdk::cceh::Init(std::string pool_dir, uint64_t pool_size) 
 {
     
     bool exists = false;

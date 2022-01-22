@@ -3,7 +3,7 @@
 #include <x86intrin.h>
 #include <numeric>
 #include "kv_wrap.hpp"
-#include "xlf_util.h"
+#include "pm_util.h"
 
 
 enum operation
@@ -69,7 +69,6 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
 
     tbb::task_scheduler_init init(thread_num);
 
-    util::PmmDataCollector measure("dimm data");
     util::ProgressShow progerss(&finished_num, keys_num);
     std::vector<std::atomic<uint64_t>> global_status(5);
     for (int i = 0; i < 5; i++)
@@ -144,6 +143,7 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
     float imc_rd, imc_wr, media_wr, media_rd;
     {
         util::PmmDataCollector measure("pmm data", &imc_rd, &imc_wr, &media_rd, &media_wr);
+        measure.DisablePrint();
         tbb::parallel_for(tbb::blocked_range<int>(0, keys_num), [&](tbb::blocked_range<int> &r) {
             uint64_t start_clock, end_clock;
             int worker_id = tbb::task_arena::current_thread_index();
@@ -171,9 +171,6 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
                 {
                     status[operation::INSERT]++;
                     int result = index.Insert(run_pairs.at(i).first, run_pairs.at(i).second);
-                    T2 r = index.Get(run_pairs.at(i).first);
-                    if (r != run_pairs.at(i).second)
-                        status[operation::READ_NOTFOUND]++;
                 }
                 else if (runtime_ops.at(i) == operation::UPDATE)
                 {

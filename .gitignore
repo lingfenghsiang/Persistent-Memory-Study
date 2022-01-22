@@ -1,5 +1,5 @@
 .vscode
 build*
-ycsb-0.17.0
-ycsb-0.17.0.tar.gz
-tmp/*
+tmp/
+ycsb_config
+pmm_stat.txt
