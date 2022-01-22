@@ -65,14 +65,8 @@ inline void mfence() { asm volatile("mfence" ::: "memory"); }
 
 inline void clflush(char *data, int len) {
   volatile char *ptr = (char *)((unsigned long)data & ~(CACHE_LINE_SIZE - 1));
-  mfence();
-  for (; ptr < data + len; ptr += CACHE_LINE_SIZE) {
-    unsigned long etsc =
-        read_tsc() + (unsigned long)(write_latency_in_ns * CPU_FREQ_MHZ / 1000);
+  for (; ptr < data + len; ptr += CACHE_LINE_SIZE) { 
     asm volatile("clflush %0" : "+m"(*(volatile char *)ptr));
-    while (read_tsc() < etsc)
-      cpu_pause();
-    //++clflush_cnt;
   }
   mfence();
 }
@@ -534,18 +528,12 @@ public:
           records[i + 1].key = records[i].key;
 
           if (flush) {
-            uint64_t records_ptr = (uint64_t)(&records[i + 1]);
+              uint64_t records_ptr = (uint64_t)(&records[i + 1]);
 
-            int remainder = records_ptr % CACHE_LINE_SIZE;
-            bool do_flush =
-                (remainder == 0) ||
-                ((((int)(remainder + sizeof(entry)) / CACHE_LINE_SIZE) == 1) &&
-                 ((remainder + sizeof(entry)) % CACHE_LINE_SIZE) != 0);
-            if (do_flush) {
+              int remainder = records_ptr % CACHE_LINE_SIZE;
+
               clflush((char *)records_ptr, CACHE_LINE_SIZE);
               to_flush_cnt = 0;
-            } else
-              ++to_flush_cnt;
           }
         } else {
           records[i + 1].ptr = records[i].ptr;
