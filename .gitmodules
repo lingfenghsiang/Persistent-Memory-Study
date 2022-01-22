@@ -1,3 +1,6 @@
 [submodule "case_study/YCSB"]
 	path = case_study/YCSB
 	url = https://github.com/brianfrankcooper/YCSB.git
+[submodule "pm_util"]
+	path = pm_util
+	url = https://github.com/lingfenghsiang/pm_util.git

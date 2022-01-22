@@ -1,75 +1,121 @@
 #include "common.h"
 
+static inline void write_4_cacheline(char *working_addr, uint64_t i)
+{
+    working_addr[i + 0] = 0;
+    working_addr[i + 64] = 0;
+    working_addr[i + 128] = 0;
+    working_addr[i + 192] = 0;
+    _mm_clflush(&working_addr[i + 0]);
+    _mm_clflush(&working_addr[i + 64]);
+    _mm_clflush(&working_addr[i + 128]);
+    _mm_clflush(&working_addr[i + 192]);
+}
+
+static inline void write_3_cacheline(char *working_addr, uint64_t i)
+{
+    working_addr[i + 0] = 0;
+    working_addr[i + 64] = 0;
+    working_addr[i + 128] = 0;
+    // working_addr[i + 192] = 0;
+    _mm_clflush(&working_addr[i + 0]);
+    _mm_clflush(&working_addr[i + 64]);
+    _mm_clflush(&working_addr[i + 128]);
+    // _mm_clflush(&working_addr[i + 192]);
+}
+
+static inline void write_2_cacheline(char *working_addr, uint64_t i)
+{
+    working_addr[i + 0] = 0;
+    working_addr[i + 64] = 0;
+    // working_addr[i + 128] = 0;
+    // working_addr[i + 192] = 0;
+    _mm_clflush(&working_addr[i + 0]);
+    _mm_clflush(&working_addr[i + 64]);
+    // _mm_clflush(&working_addr[i + 128]);
+    // _mm_clflush(&working_addr[i + 192]);
+}
+
+static inline void write_1_cacheline(char *working_addr, uint64_t i)
+{
+    working_addr[i + 0] = 0;
+    // working_addr[i + 64] = 0;
+    // working_addr[i + 128] = 0;
+    // working_addr[i + 192] = 0;
+    _mm_clflush(&working_addr[i + 0]);
+    // _mm_clflush(&working_addr[i + 64]);
+    // _mm_clflush(&working_addr[i + 128]);
+    // _mm_clflush(&working_addr[i + 192]);
+}
+
 void write_buffer(void *addr, uint64_t max_size)
 {
-    int thread_num =30;
-    pthread_barrier_t barrier;
-    pthread_barrier_init(&barrier, NULL, thread_num);
-    auto func = [&](uint64_t wss, int iterations) {
-        pthread_barrier_wait(&barrier);
+    int thread_num = 1;
+
+    void (*write_xp_line)(char *working_addr, uint64_t i);
+    auto func = [&](uint64_t wss, int iterations)
+    {
         auto working_addr = (char *)addr;
-        __m128i sse_buf;
-        register uint64_t rand_offset = 0;
-        memset(&sse_buf, 0, 16);
+
+        float media_rd, media_wr, imc_rd, imc_wr;
         {
-            
+            util::PmmDataCollector meansure("dimm", &imc_rd, &imc_wr, &media_rd, &media_wr);
             for (int j = 0; j < iterations; j++)
             {
-                rand_offset = ((rand() << 9) & (wss - 1));
-                for (uint64_t i = 0; i < wss; i += 512)
+                // you may put the offsets in a vector and std::shuffle it to test random write case,
+                // the results would be the same
+                for (uint64_t i = 0; i < wss; i += 256)
                 {
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 0 + rand_offset) & (wss - 1))), sse_buf);
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 16 + rand_offset) & (wss - 1))), sse_buf);
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 32 + rand_offset) & (wss - 1))), sse_buf);
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 48 + rand_offset) & (wss - 1))), sse_buf);
-
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 64 + rand_offset) & (wss - 1))), sse_buf);
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 80 + rand_offset) & (wss - 1))), sse_buf);
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 96 + rand_offset) & (wss - 1))), sse_buf);
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 112 + rand_offset) & (wss - 1))), sse_buf);
-
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 128 + rand_offset) & (wss - 1))), sse_buf);
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 144 + rand_offset) & (wss - 1))), sse_buf);
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 160 + rand_offset) & (wss - 1))), sse_buf);
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 176 + rand_offset) & (wss - 1))), sse_buf);
-
-                    // _mm_stream_si128((__m128i *)(working_addr + ((i + 192+ rand_offset) & (wss - 1))), sse_buf);
-                    // _mm_stream_si128((__m128i *)(working_addr + ((i + 208+ rand_offset) & (wss - 1))), sse_buf);
-                    // _mm_stream_si128((__m128i *)(working_addr +(( i + 224+ rand_offset) & (wss - 1))), sse_buf);
-                    // _mm_stream_si128((__m128i *)(working_addr + ((i + 240+ rand_offset) & (wss - 1))), sse_buf);
-
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 256 + rand_offset) & (wss - 1))), sse_buf);
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 272 + rand_offset) & (wss - 1))), sse_buf);
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 288 + rand_offset) & (wss - 1))), sse_buf);
-                    _mm_stream_si128((__m128i *)(working_addr + ((i + 304 + rand_offset) & (wss - 1))), sse_buf);
-
-                    // working_addr[i + 0] = 0;
-                    // working_addr[i + 64] = 0;
-                    // working_addr[i + 128] = 0;
-                    // // working_addr[i + 192] = 0;
-                    // _mm_clflush(&working_addr[i + 0]);
-                    // _mm_clflush(&working_addr[i + 64]);
-                    // _mm_clflush(&working_addr[i + 128]);
-                    // // _mm_clflush(&working_addr[i + 192]);
+                    (*write_xp_line)(working_addr, i);
                 }
             }
         }
+        std::cout << "-------result--------" << std::endl;
+        if (write_xp_line == write_1_cacheline)
+        {
+            std::cout << "[write type]:[1/4XPline] " << std::endl;
+        }
+        else if (write_xp_line == write_2_cacheline)
+        {
+            std::cout << "[write type]:[2/4XPline] " << std::endl;
+        }
+        else if (write_xp_line == write_3_cacheline)
+        {
+            std::cout << "[write type]:[3/4XPline] " << std::endl;
+        }
+        else if (write_xp_line == write_4_cacheline)
+        {
+            std::cout << "[write type]:[4/4XPline] " << std::endl;
+        }
+        else
+        {
+            perror("write function");
+            exit(EXIT_FAILURE);
+        }
+        std::cout << "[wss]:[" << wss << "] "
+                  << "[WA]:[" << media_wr / imc_wr << "]" << std::endl;
+        std::cout << "---------------------" << std::endl;
     };
-    // func(8192, 1ULL<<22);
-    std::vector<std::thread> work_group;
+    write_xp_line = write_1_cacheline;
+    for (uint64_t wss = 256; wss <= 32768; wss += 256)
     {
-        util::PmmDataCollector meansure("dimm");
-        for (int i = 0; i < thread_num; i++)
-        {
-            work_group.push_back(std::thread(func,32768, 1ULL << 20));
-        }
-        for (int i = 0; i < thread_num; i++)
-        {
-            work_group.at(i).join();
-        }
+        func(wss, (1ULL << 30) / wss);
     }
-
-    // func(6144, 1ULL<<22);
+    write_xp_line = write_2_cacheline;
+    for (uint64_t wss = 256; wss <= 32768; wss += 256)
+    {
+        func(wss, (1ULL << 30) / wss);
+    }
+    write_xp_line = write_3_cacheline;
+    for (uint64_t wss = 256; wss <= 32768; wss += 256)
+    {
+        func(wss, (1ULL << 30) / wss);
+    }
+    write_xp_line = write_4_cacheline;
+    for (uint64_t wss = 256; wss <= 32768; wss += 256)
+    {
+        func(wss, (1ULL << 30) / wss);
+    }
 }
 
 static int user_result_dummy = 0;
@@ -80,6 +126,12 @@ void write_buffer_flushing_period(void *addr, uint64_t max_size)
         std::cout << "-------result--------" << std::endl;
         __m512i wr_buf;
         __m512i *base_addr = (__m512i *)addr;
+
+        /**
+         * @brief delayer is used to adjust the time interval between writes,
+         * the corresponding delayed time varies as on different machines
+         * 
+         */
         volatile int delayer = 0;
         uint64_t cl_num = wss >> 6;
         uint64_t start_timer = 0, end_timer = 0;
@@ -132,115 +184,5 @@ void write_buffer_flushing_period(void *addr, uint64_t max_size)
             func(i, int((1ULL << 29) / i), j);
         }
     }
-    // func(4800, 1000000, 0);
+
 }
-
-void write_buffer_size(void *addr, uint64_t max_size)
-{
-    auto func = [&](uint64_t wss, int iterations, bool random)
-    {
-        std::cout << "-------result--------" << std::endl;
-        __m512i wr_buf;
-        __m512i *base_addr = (__m512i *)addr;
-        char* work_ptr = (char*)addr;
-        _mm_mfence();
-        memset(&wr_buf, 0, sizeof(__m512i));
-        std::vector<uint64_t> order(wss / 256);
-        for (uint64_t i = 0; i < wss / 256; i++)
-        {
-            order.at(i) = i * 256;
-        }
-        if (random)
-        {
-            std::random_shuffle(order.begin(), order.end());
-        }
-        std::vector<util::DimmObj> dimm_array;
-        {
-            util::PmmDataCollector measure("pmm", &dimm_array);
-
-            for (uint64_t i = 0; i < iterations; i++)
-            {
-                for (auto j : order)
-                {
-                    _mm512_stream_si512((__m512i *)(work_ptr + j + 0), wr_buf);
-                    // _mm512_stream_si512((__m512i *)(work_ptr + j + 64), wr_buf);
-                    // _mm512_stream_si512((__m512i *)(work_ptr + j + 128), wr_buf);
-                    // _mm512_stream_si512((__m512i *)(work_ptr + j + 192), wr_buf);
-                }
-                // for (uint64_t j = 0; j < wss; j += 256)
-                // {
-                //     _mm512_stream_si512((__m512i *)(work_ptr + j + 128), wr_buf);
-                //     _mm512_stream_si512((__m512i *)(work_ptr + j + 192), wr_buf);
-                // }
-            }
-        }
-        for (auto i : dimm_array)
-        {
-            if (i.dimm_id_.compare("0x0001") == 0)
-            {
-                std::cout << "[wss]:[" << wss << "] "
-                << "[type]:[" << "0.5wr" << "] "
-                          << "[WA]:[" << i.media_wr / i.imc_wr << "]" << std::endl;
-                break;
-            }
-        }
-
-        std::cout << "---------------------" << std::endl;
-    };
-    for (uint64_t i = (1ULL << 9); i < 32768; i +=256)
-    {
-
-            func(i, ((1ULL << 32) / i), true);
-
-    }
-}
-
-/**
- * @brief to verify when the wss is small, whether the data is read-modify-write
- * on pm, the wss need to be slightly larger than read/write buffer size and the
- * data should be written in small granularity, say 64B
- * 
- * @param addr 
- * @param max_size 
- */
-void veri_rmw(void *addr, uint64_t max_size)
-{
-    __m512i cl_buffer;
-    memset(&cl_buffer, 0, sizeof(cl_buffer));
-    auto func = [&](uint64_t wss, uint64_t iteration)
-    {
-        std::cout << "-------result--------" << std::endl;
-        char *work_ptr = (char *)addr;
-        std::vector<uint64_t> order(wss/256);
-        for (uint64_t i = 0; i < (wss / 256); i++)
-        {
-            order.at(i) = i * 256;
-        }
-        std::random_shuffle(order.begin(), order.end());
-        std::vector<util::DimmObj> dimm_info;
-        {
-            util::PmmDataCollector measure("dimm", &dimm_info);
-            for (uint64_t i = 0; i < iteration; i++)
-            {
-                for (auto j : order)
-                {
-                    _mm512_stream_si512((__m512i *)(work_ptr + j), cl_buffer);
-                }
-            }
-        }
-        for (auto i : dimm_info)
-        {
-            if (i.dimm_id_.compare("0x0100") == 0)
-            {
-                std::cout << "[wss]:[" << wss << "] "
-                          << "[type]:["
-                          << "0.5wr"
-                          << "] "
-                          << "[WA]:[" << i.media_wr / i.imc_wr << "]" << std::endl;
-                break;
-            }
-        }
-        std::cout << "---------------------" << std::endl;
-    };
-    func((1ULL << 29), 4);
-};

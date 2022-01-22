@@ -5,15 +5,6 @@
 #include <x86intrin.h>
 #include <sstream>
 #include <gflags/gflags.h>
-#include <numa.h>
-
-VMEM *vmp;
-cpu_set_t native_cpuset[HYPER_THERAD_CORE_NUM / SOCKET_NUM];
-// access pattern
-motherboard_cpu_layout *cpu_info_ptr = (motherboard_cpu_layout *)cpus_on_board;
-
-
-#define ALIGN_DOWN(addr) ((addr & (~(0xfffULL))))
 
 void nt_bzero(void *addr, uint64_t size)
 {
@@ -28,10 +19,15 @@ void nt_bzero(void *addr, uint64_t size)
     }
 }
 
-DEFINE_uint64(max_size, PERSISTENT_MAP_SIZE, "maximum_pool_size in bytes");
 DEFINE_string(pool_dir, PERSISTENT_POOL_DIR, "where to put the pool file");
+DEFINE_uint64(max_size, PERSISTENT_MAP_SIZE, "maximum_pool_size in bytes");
 DEFINE_bool(pmm, true, "shall we run the test on pm?");
-DEFINE_int32(numa_node, 0, "which numa node to run on");
+DEFINE_int32(test, 2, "tests to run, available tests include:\n\
+0. Read amplification test.\n\
+1. Prefetching test.\n\
+2. write buffer test.\n\
+3. write buffer flushing period test. ");
+
 int main(int argc, char **argv)
 {
     gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -55,67 +51,27 @@ int main(int argc, char **argv)
             exit(1);
         }
         close(fd);
-
         nt_bzero(test_addr_namespace, FLAGS_max_size);
     }
     else
     {
         posix_memalign(&test_addr_namespace, 64, FLAGS_max_size);
     }
-    // if (numa_available())
-    // {
-    //     std::cout << "numa is available" << std::endl;
-    // }
-    // numa_set_preferred(FLAGS_numa_node);
-
-    cpu_set_t local_cpu;
-    CPU_ZERO(&local_cpu);
-    CPU_SET(8, &local_cpu);
-
-    pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &local_cpu);
-
-    // get physical address
-    auto pid = getpid();
-    std::string pid_str = std::to_string(pid);
-    std::string va_low;
-    std::stringstream sstream;
-    sstream << std::hex << test_addr_namespace;
-    std::string hex_addr;
-    sstream >> hex_addr;
-    std::string cmd(GET_PAGETABLE);
-    cmd = cmd + pid_str + " " + hex_addr;
-    sstream.clear();
-    sstream << std::hex << test_addr_namespace + 4096;
-    sstream >> hex_addr;
-    cmd = cmd + " " + hex_addr;
-    std::cout << cmd << std::endl;
-    system(cmd.c_str());
 
     // test code put here
     auto uncachable_offset = 0;
     void (*test_funcs[])(void *addr, uint64_t max_size) = {
-        read_after_flush_lock_contention, //0
-        read_after_flush,                 //1
-        read_buf_partial,                 //2
-        trigger_prefetching,              //3
-        extreme_case_prefetching,         //4
-        write_buffer,                     //5
-        write_buffer_flushing_period,     //6
-        seperate_rd_wr_buf,               //7
-        read_and_write_bw,                //8
-        access_lat,                       //9
-        wr_lat_by_calc,                   //10
-        wr_bw_by_calc,                    //11
-        read_buf_amp_tst,                 //12
-        lat_test,                         //13
-        write_buffer_size,                //14
-        veri_rmw                          //15
+        read_buf_amp_tst,             //0
+        trigger_prefetching,          //1
+        write_buffer,                 //2
+        write_buffer_flushing_period, //3
+        seperate_rd_wr_buf,           //4
+        read_after_flush,             //5
+        access_lat,                   //6
     };
 
-    test_funcs[9](test_addr_namespace + uncachable_offset, FLAGS_max_size - uncachable_offset);
+    test_funcs[FLAGS_test](test_addr_namespace + uncachable_offset, FLAGS_max_size - uncachable_offset);
 
-    // vmem_free(vmp, test_addr_namespace);
-    // vmem_delete(vmp);
     std::cout << "---------------------Test over-----------------------" << std::endl;
     if (FLAGS_pmm)
     {

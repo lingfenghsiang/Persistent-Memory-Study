@@ -1,4 +1,5 @@
 #include <istream>
+#include <fstream>
 #include "common.h"
 #include "json.hpp"
 
@@ -113,15 +114,15 @@ void read_buf_amp_tst(void *addr, uint64_t max_size){
                 perror("wrong function");
                 exit(EXIT_FAILURE);
             }
+            float tmp_media_rd = 0, tmp_imc_rd = 0;
             for (auto dimm : dimm_array)
             {
-                if (dimm.dimm_id_.compare("0x0100") == 0)
-                {
-                    std::cout
-                        << "[wss]: [" << i << "]\t[RA]:[" << dimm.media_rd / dimm.imc_read << "]" << std::endl;
-                    break;
-                }
+                tmp_media_rd += dimm.media_rd;
+                tmp_imc_rd += dimm.imc_read;
             }
+            std::cout << "[wss]: [" << i
+                      << "]\t[RA]:[" << tmp_media_rd / tmp_imc_rd
+                      << "]" << std::endl;
 
             if (task.incre_ == EXP)
             {
@@ -131,7 +132,7 @@ void read_buf_amp_tst(void *addr, uint64_t max_size){
             {
                 i = i + task.step_;
             }
-            std::cout << "---------------------"<< std::endl;
+            std::cout << "---------------------" << std::endl;
         }
 
     };
