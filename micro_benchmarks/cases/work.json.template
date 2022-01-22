@@ -1,0 +1,22 @@
+{
+    "jobs": [
+        {
+            "start_wss": 4096,
+            "end_wss": 12288,
+            "inc_type": "exp",
+            "stride": 2
+        },
+        {
+            "start_wss": 12288,
+            "end_wss": 18432,
+            "inc_type": "linear",
+            "stride": 256
+        },
+        {
+            "start_wss": 18432,
+            "end_wss": 32768,
+            "inc_type": "linear",
+            "stride": 1024
+        }
+    ]
+}

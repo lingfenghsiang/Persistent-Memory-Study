@@ -1,0 +1,190 @@
+---------------------Test start-----------------------
+working set size: 4096 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 8388608
+sequential order
+Throughput is 9673.04MB/s
+Media read throughput is 0.282004MB/s
+Time is 3.55212sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 8192 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 4194304
+sequential order
+Throughput is 9649.28MB/s
+Media read throughput is 1.37783MB/s
+Time is 3.56086sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 16384 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 2097152
+sequential order
+Throughput is 9778.45MB/s
+Media read throughput is 0.369912MB/s
+Time is 3.51382sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 32768 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 1048576
+sequential order
+Throughput is 5653.28MB/s
+Media read throughput is 1.24765MB/s
+Time is 6.07784sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 65536 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 524288
+sequential order
+Throughput is 9633.79MB/s
+Media read throughput is 0.284077MB/s
+Time is 3.56658sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 131072 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 262144
+sequential order
+Throughput is 9789.2MB/s
+Media read throughput is 2.11396MB/s
+Time is 3.50996sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 262144 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 131072
+sequential order
+Throughput is 9681.98MB/s
+Media read throughput is 0.297674MB/s
+Time is 3.54883sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 524288 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 65536
+sequential order
+Throughput is 9305.62MB/s
+Media read throughput is 1.88099MB/s
+Time is 3.69236sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 1048576 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 32768
+sequential order
+Throughput is 9282MB/s
+Media read throughput is 0.318617MB/s
+Time is 3.70176sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 2097152 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 16384
+sequential order
+Throughput is 9437.05MB/s
+Media read throughput is 1.95564MB/s
+Time is 3.64094sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 4194304 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 8192
+sequential order
+Throughput is 9420.64MB/s
+Media read throughput is 0.895358MB/s
+Time is 3.64728sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 8388608 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 4096
+sequential order
+Throughput is 9309.55MB/s
+Media read throughput is 2.39391MB/s
+Time is 3.6908sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 16777216 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 2048
+sequential order
+Throughput is 9083.05MB/s
+Media read throughput is 1.19616MB/s
+Time is 3.78284sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 33554432 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 1024
+sequential order
+Throughput is 9329.12MB/s
+Media read throughput is 3.88397MB/s
+Time is 3.68307sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 67108864 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 512
+sequential order
+Throughput is 9257.35MB/s
+Media read throughput is 24.0438MB/s
+Time is 3.71162sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 134217728 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 256
+sequential order
+Throughput is 9058.95MB/s
+Media read throughput is 116.338MB/s
+Time is 3.79291sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 268435456 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 128
+sequential order
+Throughput is 7369.41MB/s
+Media read throughput is 832.108MB/s
+Time is 4.66248sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 536870912 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 64
+sequential order
+Throughput is 7239.4MB/s
+Media read throughput is 878.604MB/s
+Time is 4.74621sec
+---------------------Test over-----------------------
+---------------------Test start-----------------------
+working set size: 1073741824 Bytes
+thread number: 1
+granularity: 512 Bytes
+iteration: 32
+sequential order
+Throughput is 7202.64MB/s
+Media read throughput is 871.483MB/s
+Time is 4.77044sec
+---------------------Test over-----------------------

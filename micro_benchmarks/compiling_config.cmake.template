@@ -1,0 +1,4 @@
+# directories used in cmake file
+set(pmdk_dir /home/xlf/documents/pmdk-1.7.1)
+set(xlf_util_dir /home/xlf/documents/MyUtils)
+add_definitions(-DRA_WORKCONFIG="/home/xlf/Documents/pmm_profiling/cases/work.json")
