@@ -33,8 +33,8 @@ link_directories(
     ${PROJECT_SOURCE_DIR}/build/external_repo/cceh/CCEH-PMDK
 )
 
+add_definitions(-w)
 set(CMAKE_CXX_FLAGS "-march=native")
-
 set(src main.cpp)
 
 # set(stl_hash_src src/stl_example/stl_hashtable.cpp)
@@ -43,15 +43,20 @@ set(src main.cpp)
 add_subdirectory(external_repo/cceh/CCEH-PMDK)
 add_subdirectory(external_repo/fastfair)
 
-add_executable(${PROJECT_NAME} ${src})
-# link_directories(
-#     external_repo/dash/build
-# )
-
-# get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY LINK_DIRECTORIES)
-# foreach(dir ${dirs})
-#   message(STATUS "dir='${dir}'")
-# endforeach()
-
-target_link_libraries(${PROJECT_NAME} xlf_util tbb gflags pthread cceh_pmdk fastfair
+add_executable(cceh_test ${src})
+target_link_libraries(cceh_test xlf_util tbb gflags pthread cceh_pmdk
  )
+ target_compile_definitions(cceh_test
+ PUBLIC -DCCEH_TST)
+
+ add_executable(fastfair_original_test ${src})
+target_link_libraries(fastfair_original_test xlf_util tbb gflags pthread fastfair_original
+ )
+ target_compile_definitions(fastfair_original_test
+ PUBLIC -DFASTFAIR_TST)
+
+ add_executable(fastfair_rap_mod_test ${src})
+target_link_libraries(fastfair_rap_mod_test xlf_util tbb gflags pthread fastfair_rap_mod
+ )
+ target_compile_definitions(fastfair_rap_mod_test
+PUBLIC -DFASTFAIR_TST)

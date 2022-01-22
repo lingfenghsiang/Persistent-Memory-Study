@@ -97,17 +97,19 @@ int main(int argc, char *argv[])
         infile.close();
         std::cout << i << " ops initialized" << std::endl;
     }
-
-    // ccehpmdk::cceh pmdk_cceh;
-    // pmdk_cceh.Init(FLAGS_pool_dir, FLAGS_pool_size);
-    // test<uint64_t, uint64_t>(pmdk_cceh, init_kv, init_ops, FLAGS_thread, FLAGS_preread, FLAGS_prereadnum, "load phase");
-    // test<uint64_t, uint64_t>(pmdk_cceh, run_kv, runtime_ops, FLAGS_thread, FLAGS_preread, FLAGS_prereadnum, "run phase");
-    // pmdk_cceh.CleanUp();
-
+#ifdef CCEH_TST
+    ccehpmdk::cceh pmdk_cceh;
+    pmdk_cceh.Init(FLAGS_pool_dir, FLAGS_pool_size);
+    test<uint64_t, uint64_t>(pmdk_cceh, init_kv, init_ops, FLAGS_thread, FLAGS_preread, FLAGS_prereadnum, "load phase");
+    test<uint64_t, uint64_t>(pmdk_cceh, run_kv, runtime_ops, FLAGS_thread, FLAGS_preread, FLAGS_prereadnum, "run phase");
+    pmdk_cceh.CleanUp();
+#endif
+#ifdef FASTFAIR_TST
     fast_fair::fast_fair fastfair_obj;
     fastfair_obj.Init(FLAGS_pool_dir, FLAGS_pool_size);
     test<uint64_t, uint64_t>(fastfair_obj, init_kv, init_ops, FLAGS_thread, FLAGS_preread, FLAGS_prereadnum, "load phase");
     test<uint64_t, uint64_t>(fastfair_obj, run_kv, runtime_ops, FLAGS_thread, FLAGS_preread, FLAGS_prereadnum, "run phase");
     fastfair_obj.CleanUp();
+#endif
     return 0;
 }

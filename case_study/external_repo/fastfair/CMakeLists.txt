@@ -65,5 +65,10 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 
 
-add_library(fastfair SHARED wrap.cpp)
-target_link_libraries(fastfair pthread vmem crypto xlf_util)
+add_library(fastfair_original SHARED wrap.cpp)
+target_link_libraries(fastfair_original pthread vmem crypto xlf_util)
+
+add_library(fastfair_rap_mod SHARED wrap.cpp)
+target_link_libraries(fastfair_rap_mod pthread vmem crypto xlf_util)
+target_compile_definitions(fastfair_rap_mod
+PUBLIC -DRAP_MOD)
