@@ -21,7 +21,7 @@ def prepare_case_study():
     if not os.path.exists(os.path.join(tmp_dir, "ycsb-0.17.0")):
         os.system("cd "+ tmp_dir +" && tar -xvf " + os.path.join(tmp_dir, "ycsb-0.17.0.tar.gz"))
 
-    prepare_workload_cmd = "python3 " + os.path.join(this_file_dir, "tools", "generate_workload.py") + " -op_num=5000000"
+    prepare_workload_cmd = "python3 " + os.path.join(this_file_dir, "tools", "generate_workload.py") + " -op_num=8000"
     print(prepare_workload_cmd)
     os.system(prepare_workload_cmd)
 prepare_case_study()

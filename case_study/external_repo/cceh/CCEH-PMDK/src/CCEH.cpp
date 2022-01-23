@@ -476,7 +476,8 @@ void CCEH::Recovery(PMEMobjpool* pop){
     size_t i = 0;
     while(i < D_RO(dir)->capacity){
 	size_t depth_cur = D_RO(D_RO(D_RO(dir)->segment)[i])->local_depth;
-	size_t stride = pow(2, D_RO(dir)->depth - depth_cur);
+	size_t stride = (1UL << (D_RO(dir)->depth - depth_cur));
+	// pow(2, D_RO(dir)->depth - depth_cur);
 	size_t buddy = i + stride;
 	if(buddy == D_RO(dir)->capacity) break;
 	for(int j=buddy-1; i<j; j--){

@@ -2,7 +2,7 @@
 #define CCEH_H_
 
 #include <cstring>
-#include <cmath>
+#include <math.h>
 #include <vector>
 #include <pthread.h>
 #include <iostream>

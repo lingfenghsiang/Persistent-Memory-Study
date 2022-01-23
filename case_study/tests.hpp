@@ -142,14 +142,63 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
 
     float imc_rd, imc_wr, media_wr, media_rd;
     {
-        util::PmmDataCollector measure("pmm data", &imc_rd, &imc_wr, &media_rd, &media_wr);
-        measure.DisablePrint();
-        tbb::parallel_for(tbb::blocked_range<int>(0, keys_num), [&](tbb::blocked_range<int> &r) {
+        // util::PmmDataCollector measure("pmm data", &imc_rd, &imc_wr, &media_rd, &media_wr);
+        // measure.DisablePrint();
+        // tbb::parallel_for(tbb::blocked_range<int>(0, keys_num), [&](tbb::blocked_range<int> &r) {
+        //     uint64_t start_clock, end_clock;
+        //     int worker_id = tbb::task_arena::current_thread_index();
+        //     auto local_sync_buf = shared_sync_buffer + worker_id;
+        //     local_sync_buf->curr_progress = local_sync_buf->begin = r.begin();
+        //     local_sync_buf->end = r.end();
+        //     uint64_t status[5];
+        //     status[operation::READ] = 0;
+        //     status[operation::INSERT] = 0;
+        //     status[operation::UPDATE] = 0;
+        //     status[operation::DELETE] = 0;
+        //     status[operation::READ_NOTFOUND] = 0;
+
+        //     for (int i = r.begin(); i < r.end(); i++)
+        //     {
+        //         start_clock = rdtsc();
+        //         if (runtime_ops.at(i) == operation::READ)
+        //         {
+        //             status[operation::READ]++;
+        //             T2 r = index.Get(run_pairs.at(i).first);
+        //             if (r != run_pairs.at(i).second)
+        //                 status[operation::READ_NOTFOUND]++;
+        //         }
+        //         else if (runtime_ops.at(i) == operation::INSERT)
+        //         {
+        //             status[operation::INSERT]++;
+        //             int result = index.Insert(run_pairs.at(i).first, run_pairs.at(i).second);
+        //         }
+        //         else if (runtime_ops.at(i) == operation::UPDATE)
+        //         {
+        //             status[operation::UPDATE]++;
+        //             index.Update(run_pairs.at(i).first, run_pairs.at(i).second);
+        //         }
+        //         else if (runtime_ops.at(i) == operation::DELETE)
+        //         {
+        //             status[operation::DELETE]++;
+        //             index.Delete(run_pairs.at(i).first);
+        //         }
+        //         end_clock = rdtsc();
+        //         latency.at(i) = end_clock - start_clock;
+        //         finished_num.fetch_add(1);
+        //         local_sync_buf->curr_progress++;
+        //     }
+        //     for (int i = 0; i < 5; i++)
+        //     {
+        //         global_status.at(i).fetch_add(status[i]);
+        //     }
+        // });
+        auto func = [&]()
+        {
             uint64_t start_clock, end_clock;
             int worker_id = tbb::task_arena::current_thread_index();
             auto local_sync_buf = shared_sync_buffer + worker_id;
-            local_sync_buf->curr_progress = local_sync_buf->begin = r.begin();
-            local_sync_buf->end = r.end();
+            local_sync_buf->curr_progress = local_sync_buf->begin = 0;
+            local_sync_buf->end = keys_num;
             uint64_t status[5];
             status[operation::READ] = 0;
             status[operation::INSERT] = 0;
@@ -157,42 +206,27 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
             status[operation::DELETE] = 0;
             status[operation::READ_NOTFOUND] = 0;
 
-            for (int i = r.begin(); i < r.end(); i++)
+            for (int i = 0; i < keys_num; i++)
             {
                 start_clock = rdtsc();
-                if (runtime_ops.at(i) == operation::READ)
-                {
-                    status[operation::READ]++;
-                    T2 r = index.Get(run_pairs.at(i).first);
-                    if (r != run_pairs.at(i).second)
-                        status[operation::READ_NOTFOUND]++;
-                }
-                else if (runtime_ops.at(i) == operation::INSERT)
-                {
-                    status[operation::INSERT]++;
-                    int result = index.Insert(run_pairs.at(i).first, run_pairs.at(i).second);
-                }
-                else if (runtime_ops.at(i) == operation::UPDATE)
-                {
-                    status[operation::UPDATE]++;
-                    index.Update(run_pairs.at(i).first, run_pairs.at(i).second);
-                }
-                else if (runtime_ops.at(i) == operation::DELETE)
-                {
-                    status[operation::DELETE]++;
-                    index.Delete(run_pairs.at(i).first);
-                }
-                end_clock = rdtsc();
-                latency.at(i) = end_clock - start_clock;
-                finished_num.fetch_add(1);
-                local_sync_buf->curr_progress++;
+                 if (runtime_ops.at(i) == operation::INSERT)
+                 {
+                     status[operation::INSERT]++;
+                     int result = index.Insert(run_pairs.at(i).first, run_pairs.at(i).second);
+                 }
+
+                 end_clock = rdtsc();
+                 latency.at(i) = end_clock - start_clock;
+                 finished_num.fetch_add(1);
+                 local_sync_buf->curr_progress++;
             }
             for (int i = 0; i < 5; i++)
             {
                 global_status.at(i).fetch_add(status[i]);
             }
-        });
-    }
+        };
+        func();
+    };
 
     // total_end_clock = rdtsc();
     auto end_timer = std::chrono::system_clock::now();
