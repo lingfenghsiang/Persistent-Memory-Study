@@ -100,15 +100,9 @@ int main(int argc, char *argv[])
 #ifdef CCEH_TST
     ccehpmdk::cceh pmdk_cceh;
     pmdk_cceh.Init(FLAGS_pool_dir, FLAGS_pool_size);
-    int j = 0;
-    for(auto i:init_kv){
-        j++;
-        pmdk_cceh.Insert(i.first, i.second);
-        if (j%100==0){std::cout <<j<<std::endl;}
-    }
 
-    // test<uint64_t, uint64_t>(pmdk_cceh, init_kv, init_ops, FLAGS_thread, FLAGS_preread, FLAGS_prereadnum, "load phase");
-    // test<uint64_t, uint64_t>(pmdk_cceh, run_kv, runtime_ops, FLAGS_thread, FLAGS_preread, FLAGS_prereadnum, "run phase");
+    test<uint64_t, uint64_t>(pmdk_cceh, init_kv, init_ops, FLAGS_thread, FLAGS_preread, FLAGS_prereadnum, "load phase");
+    test<uint64_t, uint64_t>(pmdk_cceh, run_kv, runtime_ops, FLAGS_thread, FLAGS_preread, FLAGS_prereadnum, "run phase");
     pmdk_cceh.CleanUp();
 #endif
 #ifdef FASTFAIR_TST

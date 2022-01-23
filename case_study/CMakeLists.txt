@@ -5,8 +5,8 @@ set(CXX_STANDARD 11)
 
 if (NOT CMAKE_BUILD_TYPE)
     # set(CMAKE_BUILD_TYPE Release)
-    # set(CMAKE_BUILD_TYPE Debug)
-    set(CMAKE_BUILD_TYPE RelWithDebInfo)
+    set(CMAKE_BUILD_TYPE Debug)
+    # set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif ()
 
 
@@ -35,19 +35,19 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/../pm_util/ build)
 
 
 add_executable(cceh_test ${src})
-target_link_libraries(cceh_test pm_util tbb gflags pthread cceh_pmdk
+target_link_libraries(cceh_test pm_util gflags pthread cceh_pmdk
  )
  target_compile_definitions(cceh_test
  PUBLIC -DCCEH_TST)
 
  add_executable(fastfair_original_test ${src})
-target_link_libraries(fastfair_original_test pm_util tbb gflags pthread fastfair_original
+target_link_libraries(fastfair_original_test pm_util gflags pthread fastfair_original
  )
  target_compile_definitions(fastfair_original_test
  PUBLIC -DFASTFAIR_TST)
 
  add_executable(fastfair_rap_mod_test ${src})
-target_link_libraries(fastfair_rap_mod_test pm_util tbb gflags pthread fastfair_rap_mod
+target_link_libraries(fastfair_rap_mod_test pm_util gflags pthread fastfair_rap_mod
  )
  target_compile_definitions(fastfair_rap_mod_test
 PUBLIC -DFASTFAIR_TST)
