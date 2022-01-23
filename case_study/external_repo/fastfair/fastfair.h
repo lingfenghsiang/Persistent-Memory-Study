@@ -26,7 +26,6 @@
 #include <unistd.h>
 #include <vector>
 #include "persist.h"
-#define RAP_MOD
 #ifdef RAP_MOD
 #include <atomic>
 #endif

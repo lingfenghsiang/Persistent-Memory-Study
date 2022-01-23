@@ -13,7 +13,9 @@ test: src/test.cpp CCEH
 
 CCEH: src/CCEH.h src/CCEH.cpp
 	$(CXX) $(CFLAGS) -c -o src/CCEH.o src/CCEH.cpp -DINPLACE -lpmemobj -lpmem
+	$(CXX) $(CFLAGS) -c -o wrap.o wrap.cpp
 	$(CXX) $(CFLAGS) -c -o src/CCEH_CoW.o src/CCEH.cpp -lpmemobj -lpmem
-	
+	ar -rcs libcceh_pmdk.a wrap.o src/CCEH.o
+
 clean:
-	rm -rf src/*.o bin/* 
+	rm -rf src/*.o bin/* *.o

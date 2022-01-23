@@ -57,7 +57,7 @@ float average(std::vector<T> &array, uint64_t begin, uint64_t end, int stride)
 }
 
 template <typename T1, typename T2>
-__attribute__((optimize(0))) void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::vector<operation> &runtime_ops,
+void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::vector<operation> &runtime_ops,
                                        int thread_num, bool helper_mod, int prereadnum, std::string notion)
 {
     int keys_num = run_pairs.size();
