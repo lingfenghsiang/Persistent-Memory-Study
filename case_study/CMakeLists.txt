@@ -52,3 +52,9 @@ target_link_libraries(fastfair_rap_mod_test pm_util gflags pthread fastfair_rap_
  )
  target_compile_definitions(fastfair_rap_mod_test
 PUBLIC -DFASTFAIR_TST)
+
+add_executable(fastfair_unmodified_test ${src})
+target_link_libraries(fastfair_unmodified_test pm_util gflags pthread fastfair_unmodified
+ )
+ target_compile_definitions(fastfair_unmodified_test
+PUBLIC -DFASTFAIR_TST)

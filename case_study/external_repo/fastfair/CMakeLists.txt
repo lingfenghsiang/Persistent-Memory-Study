@@ -72,3 +72,8 @@ add_library(fastfair_rap_mod SHARED wrap.cpp)
 target_link_libraries(fastfair_rap_mod pthread vmem crypto)
 target_compile_definitions(fastfair_rap_mod
 PUBLIC -DRAP_MOD)
+
+add_library(fastfair_unmodified SHARED wrap.cpp)
+target_link_libraries(fastfair_unmodified pthread vmem crypto)
+target_compile_definitions(fastfair_unmodified
+PUBLIC -DUNMODIFIED_FASTFAIR)

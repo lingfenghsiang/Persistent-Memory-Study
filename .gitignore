@@ -5,3 +5,4 @@ ycsb_config
 pmm_stat.txt
 *.o
 *.a
+*.csv

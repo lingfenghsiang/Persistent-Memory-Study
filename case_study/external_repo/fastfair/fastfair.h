@@ -203,17 +203,23 @@ public:
     clflush((char *)this, sizeof(page));
   }
 
-  void *operator new(size_t size) {
+  void *operator new(size_t size)
+  {
     void *ret;
 #ifdef RUNNING_ON_PMM
-            if ((ret = vmem_aligned_alloc(vmp, 256, size)) == NULL)
-            {
-                perror("vmem_malloc");
-                exit(1);
-            }
+    if ((ret = vmem_aligned_alloc(vmp, 256, size)) == NULL)
+    {
+      perror("vmem_malloc");
+      exit(1);
+    }
 #endif
 #ifndef RUNNING_ON_PMM
-            posix_memalign(&ret, 64, size);
+    posix_memalign(&ret, 64, size);
+    if (!ret)
+    {
+      perror("posix_memalign");
+      exit(1);
+    }
 #endif
 
     return ret;

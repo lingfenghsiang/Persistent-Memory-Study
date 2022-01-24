@@ -1,17 +1,26 @@
+#ifndef UNMODIFIED_FASTFAIR
 #include "fastfair.h"
+#else
+#include "../FAST_FAIR/concurrent/src/btree.h"
+#endif
 #include "../../include/fastfair.hpp"
+#include "persist.h"
 
 // fastfair::fastfair
+#ifdef RUNNING_ON_PMM
 VMEM *vmp;
+#endif
 btree *bt;
 void fast_fair::fast_fair::Init(std::string path_name, uint64_t pool_size)
 {
+#ifdef RUNNING_ON_PMM
     if ((vmp = vmem_create(path_name.c_str(),
                            pool_size)) == NULL)
     {
         perror("vmem_create");
         exit(1);
     }
+#endif
     bt = new btree();
 };
 void fast_fair::fast_fair::CleanUp(){};

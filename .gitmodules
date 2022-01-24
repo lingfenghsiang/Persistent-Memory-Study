@@ -4,3 +4,6 @@
 [submodule "pm_util"]
 	path = pm_util
 	url = https://github.com/lingfenghsiang/pm_util.git
+[submodule "case_study/external_repo/FAST_FAIR"]
+	path = case_study/external_repo/FAST_FAIR
+	url = https://github.com/DICL/FAST_FAIR.git
