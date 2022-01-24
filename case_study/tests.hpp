@@ -61,7 +61,7 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
                                        int thread_num, bool helper_mod, int prereadnum, std::string notion)
 {
     int keys_num = run_pairs.size();
-    std::cout << notion << ":" << std::endl;
+    std::cerr << notion << ":" << std::endl;
     std::atomic<uint64_t> finished_num;
     std::vector<uint64_t> latency(keys_num, 0);
     sync_buffer *shared_sync_buffer = NULL;

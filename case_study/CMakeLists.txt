@@ -6,7 +6,7 @@ set(CXX_STANDARD 11)
 if (NOT CMAKE_BUILD_TYPE)
     # set(CMAKE_BUILD_TYPE Release)
     # set(CMAKE_BUILD_TYPE Debug)
-    # set(CMAKE_BUILD_TYPE RelWithDebInfo)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif ()
 
 
@@ -30,7 +30,7 @@ set(src main.cpp)
 # set(stl_hash_src src/stl_example/stl_hashtable.cpp)
 
 # add_subdirectory(external_repo/cceh_mod)
-# add_subdirectory(external_repo/cceh/CCEH-PMDK)
+add_subdirectory(external_repo/cceh/CCEH-PMDK)
 add_subdirectory(external_repo/fastfair)
 add_subdirectory(${PROJECT_SOURCE_DIR}/../pm_util/ build)
 

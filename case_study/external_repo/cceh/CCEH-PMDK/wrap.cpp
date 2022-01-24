@@ -1,4 +1,4 @@
-// #include <fstream>
+ // #include <fstream>
 #include <unistd.h>
 
 #include "src/CCEH.h"
@@ -51,8 +51,10 @@ int ccehpmdk::cceh::Insert(uint64_t key, uint64_t value)
     D_RW(HashTable)->Insert(pop, key, reinterpret_cast<Value_t>(value));
     return 0;
 };
-int ccehpmdk::cceh::Update(uint64_t key, uint64_t value){
-
+int ccehpmdk::cceh::Update(uint64_t key, uint64_t value)
+{
+    D_RW(HashTable)->Insert(pop, key, reinterpret_cast<Value_t>(value));
+    return 0;
 };
 uint64_t ccehpmdk::cceh::Get(uint64_t key)
 {

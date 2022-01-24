@@ -12,4 +12,4 @@ endif ()
 include_directories(${PROJECT_SOURCE_DIR})
 
 add_library(${PROJECT_NAME} SHARED src/CCEH.cpp wrap.cpp)
-target_link_libraries(${PROJECT_NAME} pmem pmemobj rt)
+target_link_libraries(${PROJECT_NAME} pmem pmemobj)
