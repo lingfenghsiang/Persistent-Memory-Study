@@ -6,3 +6,4 @@ pmm_stat.txt
 *.o
 *.a
 *.csv
+*.eps
