@@ -1,7 +1,9 @@
 [
-    "microbench_rd_amp.csv",
+    "microbench_lat.csv",
     "wss",
     [
-        "type"
+        "type",
+        "order",
+        "Trav"
     ]
 ]

@@ -237,7 +237,9 @@ void access_lat(void *addr, uint64_t max_size)
                 lat += item.avg_cycles_;
             }
             std::cout << "-------result--------" << std::endl;
-            std::cout << results.at(0).work_type_ << " " << results.at(0).order_ << std::endl;
+            std::cout << results.at(0).work_type_ << " "
+                      << results.at(0).traverse_type_ << " "
+                      << results.at(0).order_ << std::endl;
             std::cout << "[imc wr]:[" << imc_write
                       << "] [imc rd]:[" << imc_read
                       << "] [media wr]:[" << media_write

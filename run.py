@@ -61,34 +61,35 @@ def prepare_microbench():
 def run_microbench_except_prefetching():
     build_dir = os.path.join(this_file_dir, "build_benchmark", "bin")
 
-    init_command = "echo >" + os.path.join(tmp_dir,  "task0.log")
-    os.system(init_command)
-    rd_amp_run_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 0 >> " + os.path.join(tmp_dir,  "task0.log")
-    os.system(rd_amp_run_cmd)
+    # init_command = "echo >" + os.path.join(tmp_dir,  "task0.log")
+    # os.system(init_command)
+    # rd_amp_run_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 0 >> " + os.path.join(tmp_dir,  "task0.log")
+    # os.system(rd_amp_run_cmd)
 
-    init_command = "echo >" + os.path.join(tmp_dir,  "task2.log")
-    os.system(init_command)
-    wr_buf_run_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 2 >> " + os.path.join(tmp_dir,  "task2.log")
-    os.system(wr_buf_run_cmd)
+    # init_command = "echo >" + os.path.join(tmp_dir,  "task2.log")
+    # os.system(init_command)
+    # wr_buf_run_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 2 >> " + os.path.join(tmp_dir,  "task2.log")
+    # os.system(wr_buf_run_cmd)
 
-    init_command = "echo >" + os.path.join(tmp_dir,  "task4.log")
-    os.system(init_command)
-    seperate_rd_wr_buf_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 4 >> " + os.path.join(tmp_dir,  "task4.log")
-    os.system(seperate_rd_wr_buf_cmd)
+    # init_command = "echo >" + os.path.join(tmp_dir,  "task4.log")
+    # os.system(init_command)
+    # seperate_rd_wr_buf_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 4 >> " + os.path.join(tmp_dir,  "task4.log")
+    # os.system(seperate_rd_wr_buf_cmd)
 
-    init_command = "echo >" + os.path.join(tmp_dir,  "task5.log")
-    os.system(init_command)
-    rap_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 5 >> " + os.path.join(tmp_dir,  "task5.log")
-    os.system(rap_cmd)
+    # init_command = "echo >" + os.path.join(tmp_dir,  "task5.log")
+    # os.system(init_command)
+    # rap_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 5 >> " + os.path.join(tmp_dir,  "task5.log")
+    # os.system(rap_cmd)
 
-    init_command = "echo >" + os.path.join(tmp_dir,  "task5_dram.log")
-    os.system(init_command)
-    rap_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -nopmm -test 5 >> " + os.path.join(tmp_dir,  "task5_dram.log")
-    os.system(rap_cmd)
+    # init_command = "echo >" + os.path.join(tmp_dir,  "task5_dram.log")
+    # os.system(init_command)
+    # rap_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -nopmm -test 5 >> " + os.path.join(tmp_dir,  "task5_dram.log")
+    # os.system(rap_cmd)
 
     init_command = "echo >" + os.path.join(tmp_dir,  "task6.log")
     os.system(init_command)
     access_lat_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 6 >> " + os.path.join(tmp_dir,  "task6.log")
+    print(access_lat_cmd)
     os.system(access_lat_cmd)
 
 def run_microbench_prefetching():
@@ -148,14 +149,19 @@ def format_logs():
 
     os.system(python_path + " " + tool_path +
               " -log_path=" + os.path.join(tmp_dir, "task5.log") +
-              " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config5.json") +
+              " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config5_0.json") +
               " -tmp_dir=" + tmp_dir +
               " -out_dir=" + micro_bench_dir)
-    # os.system(python_path + " " + tool_path +
-    #           " -log_path=" + os.path.join(tmp_dir, "task6.log") +
-    #           " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config6.json") +
-    #           " -tmp_dir=" + tmp_dir +
-    #           " -out_dir=" + case_study_dir)
+    os.system(python_path + " " + tool_path +
+              " -log_path=" + os.path.join(tmp_dir, "task5_dram.log") +
+              " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config5_1.json") +
+              " -tmp_dir=" + tmp_dir +
+              " -out_dir=" + micro_bench_dir)              
+    os.system(python_path + " " + tool_path +
+              " -log_path=" + os.path.join(tmp_dir, "task6.log") +
+              " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config6.json") +
+              " -tmp_dir=" + tmp_dir +
+              " -out_dir=" + micro_bench_dir)
 
 def plot_results():
     pass
@@ -164,7 +170,7 @@ def plot_results():
 # run_case_study(8, "/mnt/pmem")
 
 # prepare_microbench()
-run_microbench_except_prefetching()
+# run_microbench_except_prefetching()
 
-# format_logs()
+format_logs()
 
