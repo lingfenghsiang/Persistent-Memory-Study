@@ -1,15 +1,13 @@
 import os
 import shutil
 
-from sympy import python
-
 this_file_dir = os.path.abspath(os.path.dirname(__file__))
 tmp_dir = os.path.join(this_file_dir, "tmp")
 
 python_path = "/home/xlf/anaconda3/bin/python"
 
 if not os.path.isdir(tmp_dir):
-    os.system(tmp_dir)
+    os.makedirs(tmp_dir)
 
 def prepare_case_study():
     src_dir = os.path.join(this_file_dir, "case_study")
@@ -39,7 +37,7 @@ def run_case_study(max_worker, pmem_directory):
             for j in range(1, max_worker + 1):
                 run_cmd = "numactl -N 0 " +os.path.join(build_dir, i) + " -thread " + str(j) + " >> " + os.path.join(tmp_dir,  i + ".log")
                 os.system(run_cmd)
-    # fast_fair_test()
+    fast_fair_test()
     
 
     # cceh test
@@ -217,13 +215,13 @@ def plot_results():
     run_plot_script("plot_case_cceh.py")
 
 
-# prepare_case_study()
-# run_case_study(4, "/mnt/pmem/")
+prepare_case_study()
+run_case_study(6, "/mnt/pmem/")
 
-# prepare_microbench()
-# run_microbench_except_prefetching()
-# run_microbench_prefetching()
+prepare_microbench()
+run_microbench_except_prefetching()
+run_microbench_prefetching()
 
-# format_logs()
-# plot_results()
+format_logs()
+plot_results()
 

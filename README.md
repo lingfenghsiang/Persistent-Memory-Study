@@ -19,7 +19,7 @@ compiles the code and generate worloads for case studies. Please see [Usage](#us
 
 ### Hardware requirements
 Your machine needs to have Intel Optane DC Persistent Memory installed.
-Besides, your machine needs to have AVX512, CLWB, CLFLUSH and CLFLUSHOPT instruction sets.
+Besides, your machine also needs AVX512, CLWB, CLFLUSH and CLFLUSHOPT instruction sets.
 
 It's encouraged to have at least 16GB space on the volatile file system `/dev/shm`, 
 because the case study uses 16GB by default on to test CCEH performance. 
@@ -36,7 +36,7 @@ To check where the persistent memory mounts, you may use
 ```
 ndctl list -v
 ```
-You could get hints that shows:
+You could get hints that show:
 ```
 [
   {
@@ -56,11 +56,11 @@ You could get hints that shows:
 
 ### Software requirements
 
-We run the code on Ubuntu 20.04LTS, and the compatibility on other Linux Distros are not verified. 
+We run the code on Ubuntu 20.04 LTS, and the compatibility on other Linux distros are not verified. 
 To run the code you need to install these packages:
 
 ```
-sudo apt install libvmem-dev libpmemobj-dev libssl-dev libgflags-dev numactl cmake
+sudo apt install libvmem-dev libpmemobj-dev libssl-dev libgflags-dev numactl cmake openjdk-11-jdk
 ```
 To run our "click-and-run" script, you need to have python and the some package including `pandas`, `matplotlib` and `numpy`.
 To set up the environment, it's encouraged to use [`conda`](https://docs.anaconda.com/anaconda/install/linux/#installing-on-linux).
@@ -87,6 +87,8 @@ Before you run, something must be set up. You need to
 1. Specify where the persistent memory pool locates for microbenchmarks.
 2. Specify where the persistent memory pool locates for the case study.
 3. Specify the location of your python with packages installed.
+4. Set CPU in "performance" mode.
+5. Initialize git submodules
 
 If your PM device is mounted at "/mnt/pmem".
 The default pool path for microbenchmarks is "/mnt/pmem/bench_map_file", specified in file 
@@ -97,6 +99,14 @@ If your user name is `foo`, and your conda environment is installed at `/home/fo
 you need to specify this in file [run.py](run.py) at the beginning as
 ```
 python_path = "/home/foo/anaconda3/bin/python"
+```
+
+```
+# Set CPU in "performance" mode
+echo "performance" | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+# Initialize git submodules
+git submodule init
+git submodule update
 ```
 
 ### Click and Run
