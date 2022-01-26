@@ -1,123 +1,108 @@
-
-# How
-libvmem-dev
-libpmemobj-dev
-libssl-dev
-libgflags-dev 
-numactl
-
 # Persistent memory study
 
 Implementaion of paper **Characterizing the Performance of Intel Optane Persistent Memory -- A Close Look at its On-DIMM Buffering**
 
 This paper is to appear in EuroSys 2022.
 
+This repository contains the code for microbenchmarks and case studies. It's recommended to execute the "run.py" script, because it
+compiles the code and generate worloads for case studies. Please see [Usage](#usage).
 ## Table of Contents
 
-- [Background](#background)
+<!-- - [Background](#background) -->
 - [Prerequisites](#prerequisites)
 - [Usage](#usage)
-	- [Generator](#generator)
-- [Badge](#badge)
-- [Example Readmes](#example-readmes)
-- [Related Efforts](#related-efforts)
-- [Maintainers](#maintainers)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Background
+	- [Before Run](#before-run)
+	- [Click and Run](#click-and-run)
+<!-- ## Background -->
 
 ## Prerequisites
 
 ### Hardware requirements
-Your machine 
+Your machine needs to have Intel Optane DC Persistent Memory installed.
+Besides, your machine needs to have AVX512, CLWB, CLFLUSH and CLFLUSHOPT instruction sets.
 
-Please make sure your machine supports AVX512, CLWB, CLFLUSH and CLFLUSHOPT instruction sets. The persistent memory should be configured as non-interleaved, and we get all the results on a single Optane DC Persistent memory DIMM.
+It's encouraged to have at least 16GB space on the volatile file system `/dev/shm`, 
+because the case study uses 16GB by default on to test CCEH performance. 
+If you want to use less space, you could change that in file `micro_benchmarks/compiling_config.cmake`, or
+you could also change that when you execute the program.
+To check the size of your volatile file system you could use:
+```
+df -h | grep /dev/shm
+```
+
+Finally, it's also encouraged to install your persistent memory on NUMA node 0, if you have more than one socket, 
+because the benchmark and case studies runs on node 0 by default.
+To check where the persistent memory mounts, you may use
+```
+ndctl list -v
+```
+You could get hints that shows:
+```
+[
+  {
+    "dev":"namespace1.0",
+    "mode":"fsdax",
+    "map":"dev",
+    "size":133175443456,
+    "uuid":"f1aa8979-d552-4097-adb9-ebdf822ef5d7",
+    "raw_uuid":"74c70555-8270-45d8-a76f-5ddc1e2b8838",
+    "sector_size":512,
+    "align":2097152,
+    "blockdev":"pmem1",
+    "numa_node":0
+  }
+]
+```
+
 ### Software requirements
 
+We run the code on Ubuntu 20.04LTS, and the compatibility on other Linux Distros are not verified. 
+To run the code you need to install these packages:
 
-Standard Readme started with the issue originally posed by [@maxogden](https://github.com/maxogden) over at [feross/standard](https://github.com/feross/standard) in [this issue](https://github.com/feross/standard/issues/141), about whether or not a tool to standardize readmes would be useful. A lot of that discussion ended up in [zcei's standard-readme](https://github.com/zcei/standard-readme/issues/1) repository. While working on maintaining the [IPFS](https://github.com/ipfs) repositories, I needed a way to standardize Readmes across that organization. This specification started as a result of that.
-
-> Your documentation is complete when someone can use your module without ever
-having to look at its code. This is very important. This makes it possible for
-you to separate your module's documented interface from its internal
-implementation (guts). This is good because it means that you are free to
-change the module's internals as long as the interface remains the same.
-
-> Remember: the documentation, not the code, defines what a module does.
-
-~ [Ken Williams, Perl Hackers](http://mathforum.org/ken/perl_modules.html#document)
-
-Writing READMEs is way too hard, and keeping them maintained is difficult. By offloading this process - making writing easier, making editing easier, making it clear whether or not an edit is up to spec or not - you can spend less time worrying about whether or not your initial documentation is good, and spend more time writing and using code.
-
-By having a standard, users can spend less time searching for the information they want. They can also build tools to gather search terms from descriptions, to automatically run example code, to check licensing, and so on.
-
-The goals for this repository are:
-
-1. A well defined **specification**. This can be found in the [Spec document](spec.md). It is a constant work in progress; please open issues to discuss changes.
-2. **An example README**. This Readme is fully standard-readme compliant, and there are more examples in the `example-readmes` folder.
-3. A **linter** that can be used to look at errors in a given Readme. Please refer to the [tracking issue](https://github.com/RichardLitt/standard-readme/issues/5).
-4. A **generator** that can be used to quickly scaffold out new READMEs. See [generator-standard-readme](https://github.com/RichardLitt/generator-standard-readme).
-5. A **compliant badge** for users. See [the badge](#badge).
-
-## Install
-
-This project uses [node](http://nodejs.org) and [npm](https://npmjs.com). Go check them out if you don't have them locally installed.
-
-```sh
-$ npm install --global standard-readme-spec
 ```
+sudo apt install libvmem-dev libpmemobj-dev libssl-dev libgflags-dev numactl cmake
+```
+To run our "click-and-run" script, you need to have python and the some package including `pandas`, `matplotlib` and `numpy`.
+To set up the environment, it's encouraged to use [`conda`](https://docs.anaconda.com/anaconda/install/linux/#installing-on-linux).
+
+You may install the package via:
+```
+conda install pandas matplotlib numpy
+```
+
+The persistent memory should be configured as non-interleaved, and we get all the results on a single Optane DC Persistent memory DIMM.
+```
+# destroy current namespaces on persistent memory
+ndctl destroy-namespace -f all
+# reboot is required after this
+ipmctl create -goal PersistentMemoryType=AppDirectNotInterleaved
+# execute this after reboot
+ndctl create-namespace
+```
+For more details, please refer https://docs.pmem.io/persistent-memory/getting-started-guide.
 
 ## Usage
+### Before run
+Before you run, something must be set up. You need to
+1. Specify where the persistent memory pool locates for microbenchmarks.
+2. Specify where the persistent memory pool locates for the case study.
+3. Specify the location of your python with packages installed.
 
-This is only a documentation package. You can print out [spec.md](spec.md) to your console:
+If your PM device is mounted at "/mnt/pmem".
+The default pool path for microbenchmarks is "/mnt/pmem/bench_map_file", specified in file 
+`micro_benchmarks/compiling_config.cmake`, and that for the case study is "/mnt/pmem/", specified in
+file `case_study/path.cmake`.
 
-```sh
-$ standard-readme-spec
-# Prints out the standard-readme spec
+If your user name is `foo`, and your conda environment is installed at `/home/foo/anaconda3/bin/python`,
+you need to specify this in file [run.py](run.py) at the beginning as
+```
+python_path = "/home/foo/anaconda3/bin/python"
 ```
 
-### Generator
-
-To use the generator, look at [generator-standard-readme](https://github.com/RichardLitt/generator-standard-readme). There is a global executable to run the generator in that package, aliased as `standard-readme`.
-
-## Badge
-
-If your README is compliant with Standard-Readme and you're on GitHub, it would be great if you could add the badge. This allows people to link back to this Spec, and helps adoption of the README. The badge is **not required**.
-
-[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
-
-To add in Markdown format, use this code:
-
+### Click and Run
+Run the code by
 ```
-[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+python3 run.py
 ```
-
-## Example Readmes
-
-To see how the specification has been applied, see the [example-readmes](example-readmes/).
-
-## Related Efforts
-
-- [Art of Readme](https://github.com/noffle/art-of-readme) - 💌 Learn the art of writing quality READMEs.
-- [open-source-template](https://github.com/davidbgk/open-source-template/) - A README template to encourage open-source contributions.
-
-## Maintainers
-
-[@RichardLitt](https://github.com/RichardLitt).
-
-## Contributing
-
-Feel free to dive in! [Open an issue](https://github.com/RichardLitt/standard-readme/issues/new) or submit PRs.
-
-Standard Readme follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
-
-### Contributors
-
-This project exists thanks to all the people who contribute. 
-<a href="https://github.com/RichardLitt/standard-readme/graphs/contributors"><img src="https://opencollective.com/standard-readme/contributors.svg?width=890&button=false" /></a>
-
-
-## License
-
-[MIT](LICENSE) © Richard Littauer
+You should run the command as root user, bacause getting the DIMM information requires that.
+When the execution is over, data and graphs will be generated in folder [output](output).

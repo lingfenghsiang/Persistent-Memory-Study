@@ -1,6 +1,7 @@
-import glob
 import os
 import shutil
+
+from sympy import python
 
 this_file_dir = os.path.abspath(os.path.dirname(__file__))
 tmp_dir = os.path.join(this_file_dir, "tmp")
@@ -28,27 +29,49 @@ def prepare_case_study():
     print(prepare_workload_cmd)
     os.system(prepare_workload_cmd)
 
-def run_case_study(max_worker, pmem_dir):
+def run_case_study(max_worker, pmem_directory):
     build_dir = os.path.join(this_file_dir, "build_cases")
     # fastfair test
-    for i in ["fastfair_original_test", "fastfair_rap_mod_test"]:
-        init_command = "echo >" + os.path.join(tmp_dir,  i + ".log")
-        os.system(init_command)
-        for j in range(1, max_worker + 1):
-            run_cmd = "numactl -N 0 " +os.path.join(build_dir, i) + " -thread " + str(j) + " >> " + os.path.join(tmp_dir,  i + ".log")
-            os.system(run_cmd)
+    def fast_fair_test():
+        for i in ["fastfair_original_test", "fastfair_rap_mod_test"]:
+            init_command = "echo >" + os.path.join(tmp_dir,  i + ".log")
+            os.system(init_command)
+            for j in range(1, max_worker + 1):
+                run_cmd = "numactl -N 0 " +os.path.join(build_dir, i) + " -thread " + str(j) + " >> " + os.path.join(tmp_dir,  i + ".log")
+                os.system(run_cmd)
+    # fast_fair_test()
+    
 
     # cceh test
-    init_command = "echo >" + os.path.join(tmp_dir,  "cceh.log")
-    for i in range(1, max_worker + 1):
-        run_cmd = "numactl -N 0 " + os.path.join(build_dir, "cceh_test") + " -thread " + str(i) + " >> " + os.path.join(tmp_dir,  "cceh.log")
-        os.system(run_cmd)
-        os.remove(os.path.join(os.path.abspath(pmem_dir ), "cceh_pmempool"))
-    init_command = "echo >" + os.path.join(tmp_dir,  "cceh_prepread.log")
-    for i in range(1, max_worker + 1):    
-        run_cmd = "numactl -N 0 " + os.path.join(build_dir, "cceh_test") + " -preread -thread " + str(i) + " >> " + os.path.join(tmp_dir,  "cceh_prepread.log")
-        os.system(run_cmd)
-        os.remove(os.path.join(os.path.abspath(pmem_dir ), "cceh_pmempool"))
+    def cceh_test(on_pm:bool = True):
+        if on_pm:
+            pmem_dir = pmem_directory
+            media_type = "pmm"
+        else:
+            pmem_dir = "/dev/shm/"
+            media_type = "dram"
+        init_command = "echo >" + os.path.join(tmp_dir,  "cceh_" + media_type + ".log")
+        os.system(init_command)
+        for i in range(1, max_worker + 1):
+            run_cmd = "numactl -N 0 " + os.path.join(build_dir, "cceh_test") + " -pool_dir " + pmem_dir \
+                + " -thread " + \
+                str(i) + " >> " + os.path.join(tmp_dir,
+                                               "cceh_" + media_type + ".log")
+            print("\n" + run_cmd + "\n")
+            os.system(run_cmd)
+            os.remove(os.path.join(os.path.abspath(pmem_dir), "cceh_pmempool"))
+        init_command = "echo >" + \
+            os.path.join(tmp_dir,  "cceh_preread_" + media_type + ".log")
+        os.system(init_command)
+        for i in range(1, max_worker + 1):
+            run_cmd = "numactl -N 0 " + os.path.join(build_dir, "cceh_test") + " -pool_dir " + pmem_dir \
+                + " -preread -thread " + \
+                str(i) + " >> " + os.path.join(tmp_dir,
+                                               "cceh_preread_" + media_type + ".log")
+            os.system(run_cmd)
+            os.remove(os.path.join(os.path.abspath(pmem_dir), "cceh_pmempool"))
+    cceh_test(True)
+    cceh_test(False)
 
 def prepare_microbench():
     src_dir = os.path.join(this_file_dir, "micro_benchmarks")
@@ -123,13 +146,23 @@ def format_logs():
               " -tmp_dir=" + tmp_dir +
               " -out_dir=" + case_study_dir)
     os.system(python_path + " " + tool_path +
-              " -log_path=" + os.path.join(tmp_dir, "cceh.log") +
+              " -log_path=" + os.path.join(tmp_dir, "cceh_pmm.log") +
               " -config_path=" + os.path.join(this_file_dir, "tools", "case_study_config2.json") +
               " -tmp_dir=" + tmp_dir +
               " -out_dir=" + case_study_dir)
     os.system(python_path + " " + tool_path +
-              " -log_path=" + os.path.join(tmp_dir, "cceh_prepread.log") +
+              " -log_path=" + os.path.join(tmp_dir, "cceh_preread_pmm.log") +
               " -config_path=" + os.path.join(this_file_dir, "tools", "case_study_config3.json") +
+              " -tmp_dir=" + tmp_dir +
+              " -out_dir=" + case_study_dir)
+    os.system(python_path + " " + tool_path +
+              " -log_path=" + os.path.join(tmp_dir, "cceh_dram.log") +
+              " -config_path=" + os.path.join(this_file_dir, "tools", "case_study_config4.json") +
+              " -tmp_dir=" + tmp_dir +
+              " -out_dir=" + case_study_dir)
+    os.system(python_path + " " + tool_path +
+              " -log_path=" + os.path.join(tmp_dir, "cceh_preread_dram.log") +
+              " -config_path=" + os.path.join(this_file_dir, "tools", "case_study_config5.json") +
               " -tmp_dir=" + tmp_dir +
               " -out_dir=" + case_study_dir)
 
@@ -138,6 +171,12 @@ def format_logs():
               " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config0.json") +
               " -tmp_dir=" + tmp_dir +
               " -out_dir=" + micro_bench_dir)
+    
+    os.system(python_path + " " + tool_path +
+            " -log_path=" + os.path.join(tmp_dir, "task1.log") +
+            " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config1.json") +
+            " -tmp_dir=" + tmp_dir +
+            " -out_dir=" + micro_bench_dir)
 
     os.system(python_path + " " + tool_path +
               " -log_path=" + os.path.join(tmp_dir, "task2.log") +
@@ -164,13 +203,27 @@ def format_logs():
               " -out_dir=" + micro_bench_dir)
 
 def plot_results():
-    pass
+    # plot microbench
+    def run_plot_script(file_name):
+        tool_path = os.path.join(this_file_dir, "tools", file_name)
+        os.system(python_path + " " + tool_path)
+    shutil.copy(os.path.join(tmp_dir, "task2.log"), os.path.join(this_file_dir, "output", "micro_bench", "seperate_rd_wr_buf.log"))
+    run_plot_script("plot_bench_lat.py")
+    run_plot_script("plot_bench_prefetching.py")
+    run_plot_script("plot_bench_rd_amp.py")
+    run_plot_script("plot_bench_read_after_persist.py")
+    run_plot_script("plot_bench_wr_buf.py")
+    run_plot_script("plot_case_btree.py")
+    run_plot_script("plot_case_cceh.py")
+
 
 # prepare_case_study()
-# run_case_study(8, "/mnt/pmem")
+# run_case_study(4, "/mnt/pmem/")
 
 # prepare_microbench()
 # run_microbench_except_prefetching()
+# run_microbench_prefetching()
 
 format_logs()
+plot_results()
 

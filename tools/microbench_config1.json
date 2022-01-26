@@ -1,7 +1,7 @@
 [
-    "microbench_rd_amp.csv",
+    "microbench_trigger_prefetching.csv",
     "wss",
     [
-        "type"
+        "granularity"
     ]
 ]

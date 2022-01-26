@@ -28,7 +28,7 @@ plot1=ax1.plot(xAxis/1024,line1,"s"+lineType[0], label = "read 3 cachline",marke
 plot1=ax1.plot(xAxis/1024,line2,"^"+lineType[0], label = "read 2 cachline",markevery=3, markerfacecolor='none', color = "black", markersize = 10, linewidth=2)
 plot1=ax1.plot(xAxis/1024,line3,"x"+lineType[0], label = "read 1 cachline",markevery=3, markerfacecolor='none', color = "black", markersize = 10, linewidth=2)
 
-# ax1.set_xscale("log", basex=2)
+# ax1.set_xscale("log", base=2)
 # xticks=np.logspace(12,32,11,base=2)
 # ax1.set_xticks(xticks)
 ax1.set_ylim(0,5)

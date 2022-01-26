@@ -59,7 +59,7 @@ ax2.plot(xAxis, calc_offset_seq_nt, mks[2]+lineType[1],
 ax2.plot(xAxis, calc_offset_rand_nt,
          mks[3]+lineType[1], markerfacecolor='none', color="black", markersize=10, linewidth=2)
 
-ax0.set_xscale('log', basex=2)
+ax0.set_xscale('log', base=2)
 ax0.set_xticks(np.logspace(12, 32, 11, base=2))
 ax0.set_yticks(np.arange(0, 1400, 200.0))
 ax0.tick_params(axis='y', labelsize=16)
@@ -68,7 +68,7 @@ ax0.set_ylabel("Latency (CPU cycle per element)", fontsize=16)
 ax0.set_xlabel("Working set size (byte)", fontsize=16)
 
 ax1.sharey(ax0)
-ax1.set_xscale('log', basex=2)
+ax1.set_xscale('log', base=2)
 ax1.set_xticks(np.logspace(12, 32, 11, base=2))
 ax1.set_yticks(np.arange(0, 1400, 200.0))
 ax1.tick_params(axis='y', labelsize=16)
@@ -76,7 +76,7 @@ ax1.tick_params(axis='x', labelsize=16)
 ax1.set_xlabel("Working set size (byte)", fontsize=16)
 
 ax2.sharey(ax0)
-ax2.set_xscale('log', basex=2)
+ax2.set_xscale('log', base=2)
 ax2.set_xticks(np.logspace(12, 32, 11, base=2))
 ax2.set_yticks(np.arange(0, 1400, 200.0))
 ax2.tick_params(axis='y', labelsize=16)

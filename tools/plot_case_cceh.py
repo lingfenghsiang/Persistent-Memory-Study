@@ -9,11 +9,11 @@ mks= ["o", "v", "^", "<", ">", "s", "p", "*", "D", "P"]
 lineType = ["-", "--",":", "-." ]
 
 # dram
-path0 = os.path.join(this_file_dir, "..", "output", "case_study", "original_cceh.csv")
-path1 = os.path.join(this_file_dir, "..", "output", "case_study", "cceh_with_preread.csv")
+path0 = os.path.join(this_file_dir, "..", "output", "case_study", "cceh_original_dram.csv")
+path1 = os.path.join(this_file_dir, "..", "output", "case_study", "cceh_with_preread_dram.csv")
 # pm 
-path2 = os.path.join(this_file_dir, "..", "output", "case_study", "original_cceh.csv")
-path3 = os.path.join(this_file_dir, "..", "output", "case_study", "cceh_with_preread.csv")
+path2 = os.path.join(this_file_dir, "..", "output", "case_study", "cceh_original_pmm.csv")
+path3 = os.path.join(this_file_dir, "..", "output", "case_study", "cceh_with_preread_pmm.csv")
 
 # dram 
 df0 = pd.read_csv(path0)
