@@ -1,12 +1,12 @@
 # Case studies
-# How to build
+## How to build
 ```
 mkdir build
 cd build && cmake ..
 make
 ```
 
-# How to run
+## How to run
 To run the code, just use
 
 `cceh_test/fastfair_original_test/fastfair_rap_mod_test/fastfair_unmodified_test -[options] [value]`
@@ -27,7 +27,7 @@ The options include:
 - preread: Whether to run a preread thread. If yes type "-preread", otherwise type "-nopreread". If we use preread option, each worker will be given a preread thread for assistance.
 - prereadnum: How much should the preread thread be faster? For example, "-prereadnum 4", means each preread thread will be 4 key-value pairs faster than the working thread, given the limited L3 cache size.
 
-# How does the workload file look like?
+## How does the workload file look like?
 The workload is generated via YCSB and formated by [generate_workload.py](../tools/generate_workload.py).
 Each line is an operation and an unsigned 64bit integer.
 ```
@@ -38,5 +38,5 @@ INSERT 1150730008844191335
 INSERT 7745948095805038430
 INSERT 6938526047896506085
 ```
-# Miscellaneous
+## Miscellaneous
 **Note**: the original code for FastFair has some bugs when multiple threads insert then read the key value pairs.

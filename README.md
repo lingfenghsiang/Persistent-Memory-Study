@@ -38,7 +38,7 @@ To check where the persistent memory mounts, you may use
 ```
 ndctl list -v
 ```
-You could get hints that show:
+You could get hints that show. If the node is not 0, please put the PM DIMM on other sockets and try again.
 ```
 [
   {
