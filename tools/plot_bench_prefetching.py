@@ -15,7 +15,7 @@ df = pd.read_csv(data_path)
 
 wss = df["wss"].to_numpy()
 
-theoretical_read= df[" 256 ideal written data"].to_numpy()
+theoretical_read= df[" 256 ideal read data"].to_numpy()
 imc_read_256B= df[" 256 imc read"].to_numpy()
 media_read_256B= df[" 256 media read"].to_numpy()
 

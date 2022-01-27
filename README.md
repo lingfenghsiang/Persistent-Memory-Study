@@ -13,6 +13,8 @@ compiles the code and generate worloads for case studies. Please see [Usage](#us
 - [Usage](#usage)
 	- [Before Run](#before-run)
 	- [Click and Run](#click-and-run)
+  - [Details](#details)
+- [Miscellaneous](#Miscellaneous)
 <!-- ## Background -->
 
 ## Prerequisites
@@ -70,7 +72,18 @@ You may install the package via:
 conda install pandas matplotlib numpy
 ```
 
-The persistent memory should be configured as non-interleaved, and we get all the results on a single Optane DC Persistent memory DIMM.
+The persistent memory should be configured as non-interleaved for microbenchmarks and interleaved for case studies.
+
+Set PM in non-interleaved mode:
+```
+# destroy current namespaces on persistent memory
+ndctl destroy-namespace -f all
+# reboot is required after this
+ipmctl create -goal
+# execute this after reboot
+ndctl create-namespace
+```
+Set PM in interleaved mode:
 ```
 # destroy current namespaces on persistent memory
 ndctl destroy-namespace -f all
@@ -116,3 +129,21 @@ python3 run.py
 ```
 You should run the command as root user, bacause getting the DIMM information requires that.
 When the execution is over, data and graphs will be generated in folder [output](output).
+### Details
+For more details about micro-benchmarks, please go to folder [micro_benchmarks](micro_benchmarks).
+
+For more details about micro-benchmarks, please go to folder [case_study](case_study).
+
+## Miscellaneous
+### What if I forget to install some dependencies?
+ If you forget to install any dependencies before running "run.py", you need to delete the "tmp" folder. Once the dependencies are fixed, the "run.py" will create "tmp" folder again.
+### How do I mount my PM device?
+Once you have created the namespaces of PM devices, you need to format the device in file sytems that support direct access (e.g. EXT4). You may have a device named "/dev/pmem0". Please execute
+```
+mkfs.ext4 /dev/pmem0
+# mount the device at /mnt/pmem
+mount -o dax /dev/pmem0 /mnt/pmem
+```
+
+### How to turn off my CPU prefetching?
+To run the prefetching test, you have to turn off the CPU prefetching. Normally, the CPU prefetching configuration is included in the computer BIOS system and could be found in the advanced CPU configuration. Detailed operations varies on machines from different vendors.

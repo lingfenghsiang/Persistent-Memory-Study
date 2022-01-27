@@ -1,9 +1,0 @@
-struct cpu_physical{
-    uint16_t hyperthread_core_[HYPER_THERAD_CORE_NUM/PHY_CORE_NUM];
-};
-struct cpu_socket{
-    cpu_physical cpu_physical_[PHY_CORE_NUM/SOCKET_NUM];
-};
-struct motherboard_cpu_layout{
-    cpu_socket cpu_socket_[SOCKET_NUM];
-};

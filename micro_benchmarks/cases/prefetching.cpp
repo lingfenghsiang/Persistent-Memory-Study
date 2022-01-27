@@ -60,14 +60,18 @@ void trigger_prefetching(void *addr, uint64_t max_size)
                     sum++;
                 }
             }
-            user_result_dummy += sum + tmp;
+            user_result_dummy += sum;
         }
         std::cout << "-------result--------" << std::endl;
         std::cout << "[wss]:[" << ((sequence.size() * granularity_buf_line) << 8) << "](B)" << std::endl
-                  << "[ideal written data]:[" << size * iterations / 1024 / 1024 << "](MB)" << std::endl
+                  << "[ideal read data]:[" << size * iterations / 1024 / 1024 << "](MB)" << std::endl
                   << "[imc read]:[" << imc_read << "](MB)" << std::endl
                   << "[granularity]:[" << granularity_buf_line * 256 << "](B)" << std::endl
-                  << "[media read]:[" << media_read << "](MB)" << std::endl;
+                  << "[imc read ratio]:[" << imc_read / (size * iterations / 1024 / 1024) << "]" << std::endl
+                  << "[media read]:[" << media_read << "](MB)" << std::endl
+                  << "[pm read ratio]:["
+                  << media_read / (size * iterations / 1024 / 1024) << "]"
+                  << std::endl;
         std::cout << "---------------------" << std::endl;
     };
 

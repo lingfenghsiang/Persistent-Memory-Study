@@ -31,16 +31,16 @@ pm_mod_latency = df1[" load phase Avg latency"].to_numpy()
 pm_do_flush_latency = df0[" load phase Avg latency"].to_numpy()
 
 # fig, ax1 = plt.subplots(figsize = (8,4.96))
-fig, ((ax0, ax1)) = plt.subplots(1, 2, figsize=(6, 5))
+fig, ((ax0, ax1)) = plt.subplots(1, 2, figsize=(10, 3.7))
 
 
 ax0.plot(threads, pm_mod_throughput, "o"+lineType[0], label="Out-of-place update",
          markerfacecolor='none', color="black", markersize=10, linewidth=2)
 ax0.plot(threads, pm_do_flush_throughput, "x"+':', label="In-place update",
          markerfacecolor='none', color="black", markersize=10, linewidth=2)
-ax1.plot(threads, pm_mod_latency, "o"+lineType[0], label="Out-of-place update",
+ax1.plot(threads, pm_mod_latency/1000, "o"+lineType[0], label="Out-of-place update",
          markerfacecolor='none', color="black", markersize=10, linewidth=2)
-ax1.plot(threads, pm_do_flush_latency, "x"+':', label="In-place update",
+ax1.plot(threads, pm_do_flush_latency/1000, "x"+':', label="In-place update",
          markerfacecolor='none', color="black", markersize=10, linewidth=2)
 
 
@@ -64,9 +64,6 @@ ax0.tick_params(axis='x', labelsize=the_font_size)
 ax1.tick_params(axis='y', labelsize=the_font_size)
 ax1.tick_params(axis='x', labelsize=the_font_size)
 
-ax0.label_outer()
-ax1.label_outer()
-
 space0 = -0.3
 space1 = -0.5
 
@@ -86,7 +83,7 @@ fig.legend(handles, labels, fontsize=the_font_size,
 # ax2.set_xticks(xtics)
 # ax1.set_xticks(xtics)
 
-ax0.sharey(ax0)
+# ax0.sharey(ax0)
 # ax3.sharey(ax2)
 # ax0.sharex(ax2)
 # ax3.sharex(ax1)

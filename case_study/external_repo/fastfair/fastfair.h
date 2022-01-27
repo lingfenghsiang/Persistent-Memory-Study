@@ -25,6 +25,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <vector>
+#include <x86intrin.h>
 #include "persist.h"
 #ifdef RAP_MOD
 #include <atomic>
@@ -78,8 +79,9 @@ inline void mfence() { asm volatile("mfence" ::: "memory"); }
 
 inline void clflush(char *data, int len) {
   volatile char *ptr = (char *)((unsigned long)data & ~(CACHE_LINE_SIZE - 1));
-  for (; ptr < data + len; ptr += CACHE_LINE_SIZE) { 
-    asm volatile("clflush %0" : "+m"(*(volatile char *)ptr));
+  for (; ptr < data + len; ptr += CACHE_LINE_SIZE)
+  {
+    _mm_clwb((void *)ptr);
   }
   mfence();
 }

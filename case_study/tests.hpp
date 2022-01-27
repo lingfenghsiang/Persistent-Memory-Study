@@ -75,17 +75,18 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
     }
 
     // set up preread threads
+    if (!posix_memalign((void **)&shared_sync_buffer, 64, 64 * thread_num))
+    {
+        memset(shared_sync_buffer, 0, 64 * thread_num);
+    }
+    else
+    {
+        return;
+    };
+
     if (helper_mod)
     {
 
-        if (!posix_memalign((void **)&shared_sync_buffer, 64, 64 * thread_num))
-        {
-            memset(shared_sync_buffer, 0, 64 * thread_num);
-        }
-        else
-        {
-            return;
-        };
         std::atomic<int> thread_id(0);
         int preread_shreshold = prereadnum;
 
@@ -123,13 +124,11 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
                 }
                 else
                 {
-                    // if (runtime_ops.at(progerss) == operation::INSERT)
                     index.Touch(run_pairs.at(progerss).first);
                     progerss++;
                 }
             }
         };
-        
         preread_group.reserve(thread_num);
         for (int i = 0; i < thread_num; i++)
         {
@@ -140,11 +139,12 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
     std::vector<std::thread> works;
     std::atomic<uint64_t> progress(0);
 
-    auto worker = [&index, &progress, &run_pairs, &runtime_ops, &latency, &global_status](uint64_t mini_batch)
+    auto worker = [&index, &progress, &run_pairs, &runtime_ops, &latency, &global_status, &shared_sync_buffer](uint64_t mini_batch, int worker_id)
     {
         uint64_t max_ops = run_pairs.size(), start_clock, end_clock;
         uint64_t start_idx = progress.fetch_add(mini_batch), end_idx = std::min(max_ops, start_idx + mini_batch);
         uint64_t status[5];
+        auto local_sync_buf = shared_sync_buffer + worker_id;
         status[operation::READ] = 0;
         status[operation::INSERT] = 0;
         status[operation::UPDATE] = 0;
@@ -152,6 +152,8 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
         status[operation::READ_NOTFOUND] = 0;
         while (start_idx < max_ops)
         {
+            local_sync_buf->curr_progress = local_sync_buf->begin = start_idx;
+            local_sync_buf->end = end_idx;
             for (int i = start_idx; i < end_idx; i++)
             {
                 start_clock = rdtsc();
@@ -179,6 +181,8 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
                 }
                 end_clock = rdtsc();
                 latency.at(i) = end_clock - start_clock;
+                local_sync_buf->curr_progress++;
+                _mm_sfence();
             }
             start_idx = progress.fetch_add(mini_batch);
 
@@ -199,7 +203,7 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
         measure.DisablePrint();
         for (int i = 0; i < thread_num; i++)
         {
-            works.push_back(std::thread{worker, 10000});
+            works.push_back(std::thread{worker, 100000, i});
         }
         for (int i = 0; i < thread_num; i++)
         {
@@ -207,100 +211,7 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
         }
     }
     auto end_timer = std::chrono::system_clock::now();
-    // tbb::parallel_for(tbb::blocked_range<int>(0, keys_num), [&](tbb::blocked_range<int> &tbb_range) {
-    //     uint64_t start_clock, end_clock;
-    //     int worker_id = tbb::task_arena::current_thread_index();
-    //     // auto local_sync_buf = shared_sync_buffer + worker_id;
-    //     // local_sync_buf->curr_progress = local_sync_buf->begin = tbb_range.begin();
-    //     // local_sync_buf->end = tbb_range.end();
-    //     uint64_t status[5];
-    //     status[operation::READ] = 0;
-    //     status[operation::INSERT] = 0;
-    //     status[operation::UPDATE] = 0;
-    //     status[operation::DELETE] = 0;
-    //     status[operation::READ_NOTFOUND] = 0;
 
-    //     for (int i = tbb_range.begin(); i < tbb_range.end(); i++)
-    //     {
-    //         tmp_idx++;
-    //         if (tmp_idx % 1000 == 0)
-    //         {
-    //             std::cout << tmp_idx << std::endl;
-    //         }
-    //         index.Insert(run_pairs[i].first, run_pairs[i].second);
-    //     }
-
-    //         //     start_clock = rdtsc();
-    //         //     if (runtime_ops.at(i) == operation::READ)
-    //         //     {
-    //         //         status[operation::READ]++;
-    //         //         T2 r = index.Get(run_pairs.at(i).first);
-    //         //         if (r != run_pairs.at(i).second)
-    //         //             status[operation::READ_NOTFOUND]++;
-    //         //     }
-    //         //     else if (runtime_ops.at(i) == operation::INSERT)
-    //         //     {
-    //         //         status[operation::INSERT]++;
-    //         //         int result = index.Insert(run_pairs.at(i).first, run_pairs.at(i).second);
-    //         //     }
-    //         //     else if (runtime_ops.at(i) == operation::UPDATE)
-    //         //     {
-    //         //         status[operation::UPDATE]++;
-    //         //         index.Update(run_pairs.at(i).first, run_pairs.at(i).second);
-    //         //     }
-    //         //     else if (runtime_ops.at(i) == operation::DELETE)
-    //         //     {
-    //         //         status[operation::DELETE]++;
-    //         //         index.Delete(run_pairs.at(i).first);
-    //         //     }
-    //         //     end_clock = rdtsc();
-    //         //     latency.at(i) = end_clock - start_clock;
-    //         //     finished_num.fetch_add(1);
-    //         //     local_sync_buf->curr_progress++;
-    //         // }
-    //         // for (int i = 0; i < 5; i++)
-    //         // {
-    //         //     global_status.at(i).fetch_add(status[i]);
-    //         // }
-    //     });
-    //     auto func = [&]()
-    //     {
-    //         uint64_t start_clock, end_clock;
-    //         int worker_id = tbb::task_arena::current_thread_index();
-    //         auto local_sync_buf = shared_sync_buffer + worker_id;
-    //         local_sync_buf->curr_progress = local_sync_buf->begin = 0;
-    //         local_sync_buf->end = keys_num;
-    //         uint64_t status[5];
-    //         status[operation::READ] = 0;
-    //         status[operation::INSERT] = 0;
-    //         status[operation::UPDATE] = 0;
-    //         status[operation::DELETE] = 0;
-    //         status[operation::READ_NOTFOUND] = 0;
-
-    //         for (int i = 0; i < keys_num; i++)
-    //         {
-    //             start_clock = rdtsc();
-    //              if (runtime_ops.at(i) == operation::INSERT)
-    //              {
-    //                  status[operation::INSERT]++;
-    //                  int result = index.Insert(run_pairs.at(i).first, run_pairs.at(i).second);
-    //              }
-
-    //              end_clock = rdtsc();
-    //              latency.at(i) = end_clock - start_clock;
-    //              finished_num.fetch_add(1);
-    //              local_sync_buf->curr_progress++;
-    //         }
-    //         for (int i = 0; i < 5; i++)
-    //         {
-    //             global_status.at(i).fetch_add(status[i]);
-    //         }
-    //     };
-    //     func();
-    // };
-
-    // // total_end_clock = rdtsc();
-    
     if (helper_mod)
     {
         end_flag = 1;
@@ -308,8 +219,8 @@ void test(Index<T1, T2> &index, std::vector<std::pair<T1, T2>> &run_pairs, std::
         {
             preread_group.at(i).join();
         }
-        free(shared_sync_buffer);
     }
+    free(shared_sync_buffer);
     std::sort(latency.begin(), latency.end());
     uint64_t avg_clock = average(latency, 0, keys_num, 10000);
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_timer - start_timer);
