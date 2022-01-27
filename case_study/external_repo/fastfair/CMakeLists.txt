@@ -1,17 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
-project(cceh)
+project(fast_fair)
 
 # include(path.cmake)
 include_directories(
         ${PROJECT_SOURCE_DIR}
-        ${xlf_util_dir}/include
         "./"
 )
-
-link_directories(
-        ${xlf_util_dir}/build
-)
-
 
 set(CMAKE_CXX_STANDARD 11)
 if (NOT CMAKE_BUILD_TYPE)

@@ -79,7 +79,7 @@ Set PM in non-interleaved mode:
 # destroy current namespaces on persistent memory
 ndctl destroy-namespace -f all
 # reboot is required after this
-ipmctl create -goal
+ipmctl create -goal PersistentMemoryType=AppDirectNotInterleaved
 # execute this after reboot
 ndctl create-namespace
 ```
@@ -88,7 +88,7 @@ Set PM in interleaved mode:
 # destroy current namespaces on persistent memory
 ndctl destroy-namespace -f all
 # reboot is required after this
-ipmctl create -goal PersistentMemoryType=AppDirectNotInterleaved
+ipmctl create -goal
 # execute this after reboot
 ndctl create-namespace
 ```
@@ -147,3 +147,6 @@ mount -o dax /dev/pmem0 /mnt/pmem
 
 ### How to turn off my CPU prefetching?
 To run the prefetching test, you have to turn off the CPU prefetching. Normally, the CPU prefetching configuration is included in the computer BIOS system and could be found in the advanced CPU configuration. Detailed operations varies on machines from different vendors.
+
+### My ipmctl tool does not work.
+The offical ipmctl may not apply to 2nd generation Optane DC Persistent memory. If your ipmctl cannot configure the PM device, you need to download and compile the latest code of ipmctl. For more details please refer https://docs.pmem.io/ipmctl-user-guide/installing-ipmctl/building-and-installing-ipmctl-from-source-on-linux
