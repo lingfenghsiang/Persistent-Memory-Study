@@ -62,7 +62,7 @@ We run the code on Ubuntu 20.04 LTS, and the compatibility on other Linux distro
 To run the code you need to install these packages:
 
 ```
-sudo apt install libvmem-dev libpmemobj-dev libssl-dev libgflags-dev numactl cmake openjdk-11-jdk
+sudo apt install libvmem-dev libpmemobj-dev libssl-dev libgflags-dev libssl-dev numactl cmake openjdk-11-jdk
 ```
 To run our "click-and-run" script, you need to have python and the some package including `pandas`, `matplotlib` and `numpy`.
 To set up the environment, it's encouraged to use [`conda`](https://docs.anaconda.com/anaconda/install/linux/#installing-on-linux).

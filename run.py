@@ -4,7 +4,7 @@ import shutil
 this_file_dir = os.path.abspath(os.path.dirname(__file__))
 tmp_dir = os.path.join(this_file_dir, "tmp")
 
-python_path = "/home/xlf/miniconda3/bin/python"
+python_path = "/home/xlf/anaconda3/bin/python"
 
 if not os.path.isdir(tmp_dir):
     os.makedirs(tmp_dir)
@@ -218,7 +218,7 @@ prepare_microbench()
 run_microbench_except_prefetching()
 run_microbench_prefetching()
 prepare_case_study()
-run_case_study(10, "/mnt/pmem/")
+run_case_study(6, "/mnt/pmem/")
 format_logs()
 plot_results()
 
