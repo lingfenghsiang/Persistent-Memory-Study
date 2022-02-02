@@ -15,6 +15,7 @@ compiles the code and generate worloads for case studies. Please see [Usage](#us
   - [Reproduce results from the paper](#reproduce-results-from-the-paper)
   - [Change working example size for case study](#change-working-example-size-for-case-study)
   - [Details](#details)
+- [Notion](#notion)
 - [Matching Paper Results](#matching-paper-results)
 - [Miscellaneous](#Miscellaneous)
 <!-- ## Background -->
@@ -279,7 +280,7 @@ Figure 12. FAST & FAIR case study. This generated graph only shows the results o
 
 ## Notion
 
-When the machine boots up, there could be read or write operation on the DIMMs. If you observe strange spikes on the graph, you could wait for some time and run the code again.
+When the machine boots up, there could be unintended read or write operation on the DIMMs. If you observe strange spikes on the graph, you could wait for some time and run the code again.
 ## Miscellaneous
 ### What if I forget to install some dependencies?
  If you forget to install any dependencies before running "run.py", you need to delete the "tmp" folder. Once the dependencies are fixed, the "run.py" will create "tmp" folder again.
