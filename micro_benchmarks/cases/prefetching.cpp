@@ -29,11 +29,10 @@ void trigger_prefetching(void *addr, uint64_t max_size)
             sequence.at(i) = i;
         }
         std::srand(time(NULL));
-
-        float imc_read, imc_write, media_read, media_write;
+        std::vector<util::DimmObj> dimm_array;
         {
 
-            util::PmmDataCollector measure("DIMM data", &imc_read, &imc_write, &media_read, &media_write);
+            util::PmmDataCollector measure("DIMM data", &dimm_array);
             for (int j = 0; j < iterations; j++)
             {
                 std::random_shuffle(sequence.begin(), sequence.end());
@@ -62,15 +61,27 @@ void trigger_prefetching(void *addr, uint64_t max_size)
             }
             user_result_dummy += sum;
         }
+        util::DimmObj *target_dimm=nullptr;
+        for (auto &i : dimm_array)
+        {
+            if (!target_dimm)
+            {
+                target_dimm = &i;
+            }
+            if (target_dimm->imc_read < i.imc_read)
+            {
+                target_dimm = &i;
+            }
+        }
         std::cout << "-------result--------" << std::endl;
         std::cout << "[wss]:[" << ((sequence.size() * granularity_buf_line) << 8) << "](B)" << std::endl
                   << "[ideal read data]:[" << size * iterations / 1024 / 1024 << "](MB)" << std::endl
-                  << "[imc read]:[" << imc_read << "](MB)" << std::endl
+                  << "[imc read]:[" << target_dimm->imc_read << "](MB)" << std::endl
                   << "[granularity]:[" << granularity_buf_line * 256 << "](B)" << std::endl
-                  << "[imc read ratio]:[" << imc_read / (size * iterations / 1024 / 1024) << "]" << std::endl
-                  << "[media read]:[" << media_read << "](MB)" << std::endl
+                  << "[imc read ratio]:[" << target_dimm->imc_read / (size * iterations / 1024 / 1024) << "]" << std::endl
+                  << "[media read]:[" << target_dimm->media_rd << "](MB)" << std::endl
                   << "[pm read ratio]:["
-                  << media_read / (size * iterations / 1024 / 1024) << "]"
+                  << target_dimm->media_rd / (size * iterations / 1024 / 1024) << "]"
                   << std::endl;
         std::cout << "---------------------" << std::endl;
     };

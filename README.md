@@ -146,4 +146,4 @@ mount -o dax /dev/pmem0 /mnt/pmem
 ```
 
 ### How to turn off my CPU prefetching?
-To run the prefetching test, you have to turn off the CPU prefetching. Normally, the CPU prefetching configuration is included in the computer BIOS system and could be found in the advanced CPU configuration. Detailed operations varies on machines from different vendors.
+To run the prefetching test, you have to turn off the CPU prefetching,CPU prefetching, including hardware prefetching, adjacent cacheline prefetching, LLC prefetch, if there are any. Normally, the CPU prefetching configuration is included in the computer BIOS system and could be found in the advanced CPU configuration. Detailed operations varies on machines from different vendors.

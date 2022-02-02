@@ -20,7 +20,7 @@ The options include:
 ### 0. read_buf_amp_tst
 Prove the existence of PM read buffer and estimate its size.
 ### 1. trigger_prefetching,
-Investigates the prefetching mechanism of PM device. If you run this test, you must turn off the CPU prefetching in BIOS configuration.
+Investigates the prefetching mechanism of PM device. If you run this test, you must turn off the CPU prefetching, including hardware prefetching, adjacent cacheline prefetching, LLC prefetch, if there are any, in BIOS configuration.
 
 ### 2. write_buffer,
 Explore the write buffering mechanism and its size. If you want its working set size set flexibly, you may configure its working set size in file [work.json](cases/work.json). Here it is enclosed. "inc_type" hints how you like the working set size increments. It could be either exponential("exp") or linear("linear"). You should also specify the beginning, the end and the step it takes as the working set size gradually increases.

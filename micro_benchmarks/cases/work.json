@@ -8,15 +8,15 @@
         },
         {
             "start_wss": 12288,
-            "end_wss": 18432,
+            "end_wss": 22528,
             "inc_type": "linear",
             "stride": 256
         },
         {
-            "start_wss": 18432,
+            "start_wss": 22528,
             "end_wss": 32768,
             "inc_type": "linear",
-            "stride": 1024
+            "stride": 512
         }
     ]
 }

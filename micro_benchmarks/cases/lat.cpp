@@ -20,7 +20,7 @@ static __m512i cl_buffer;
 static inline void wr_clwb_sfence(void *addr)
 {
     *((int *)addr) += 10;
-    _mm_clflushopt(addr);
+    _mm_clwb(addr);
     _mm_sfence();
 }
 
@@ -33,7 +33,7 @@ static inline void wr_nt_sfence(void *addr)
 static inline void wr_clwb(void *addr)
 {
     *((int *)addr) += 10;
-    _mm_clflushopt(addr);
+    _mm_clwb(addr);
 }
 
 static inline void wr_nt(void *addr)

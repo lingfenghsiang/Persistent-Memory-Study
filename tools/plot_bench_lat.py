@@ -84,7 +84,7 @@ ax2.tick_params(axis='x', labelsize=16)
 ax2.set_xlabel("Working set size (byte)", fontsize=16)
 
 ax0.set_title('(a) Write with strict persistency', fontsize=16, y=-0.3)
-ax0.set_title('(b) Write with relaxed persistency', fontsize=16, y=-0.3)
+ax1.set_title('(b) Write with relaxed persistency', fontsize=16, y=-0.3)
 ax2.set_title('(c) Latency breakdown of pure reads and writes',
               fontsize=16, y=-0.3)
 
