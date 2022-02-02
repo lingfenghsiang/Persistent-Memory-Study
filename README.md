@@ -279,8 +279,9 @@ Figure 12. FAST & FAIR case study. This generated graph only shows the results o
 
 
 ## Notion
-
 When the machine boots up, there could be unintended read or write operation on the DIMMs. If you observe strange spikes on the graph, you could wait for some time and run the code again.
+
+The progress for case study is updated every 3 seconds. It's normal if some progress bars do not reach 100%.
 ## Miscellaneous
 ### What if I forget to install some dependencies?
  If you forget to install any dependencies before running "run.py", you need to delete the "tmp" folder. Once the dependencies are fixed, the "run.py" will create "tmp" folder again.
