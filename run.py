@@ -117,7 +117,7 @@ def run_microbench_prefetching():
     build_dir = os.path.join(this_file_dir, "build_benchmark", "bin")
     init_command = "echo >" + os.path.join(tmp_dir,  "task1.log")
     os.system(init_command)
-    prefetching_cmd = os.path.join(build_dir, "microbench") + " -test 1 >> " + os.path.join(tmp_dir,  "task1.log")
+    prefetching_cmd =  "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 1 >> " + os.path.join(tmp_dir,  "task1.log")
     os.system(prefetching_cmd)
 
 
