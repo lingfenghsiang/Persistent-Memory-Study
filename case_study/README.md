@@ -27,6 +27,47 @@ The options include:
 - preread: Whether to run a preread thread. If yes type "-preread", otherwise type "-nopreread". If we use preread option, each worker will be given a preread thread for assistance.
 - prereadnum: How much should the preread thread be faster? For example, "-prereadnum 4", means each preread thread will be 4 key-value pairs faster than the working thread, given the limited L3 cache size.
 
+## Code files
+Important files are listed in the file tree shown below:  
+.  
+├── CMakeLists.txt  
+├── external_repo  
+│   ├── cceh  
+│   │   ├── CCEH-PMDK  
+│   │   │   ├── CMakeLists.txt  
+│   │   │   ├── Makefile  
+│   │   │   ├── README.md  
+│   │   │   ├── src  
+│   │   │   │   ├── CCEH.cpp  
+│   │   │   │   ├── CCEH.h  
+│   │   │   │   ├── hash.h  
+│   │   │   │   ├── pair.h  
+│   │   │   │   ├── test.cpp  
+│   │   │   │   └── util.h  
+│   │   │   └── wrap.cpp  
+│   ├── fastfair  
+│   │   ├── CMakeLists.txt  
+│   │   ├── fastfair.h  
+│   │   ├── persist.h  
+│   │   └── wrap.cpp  
+│   └── FAST_FAIR  
+│       └── concurrent  
+│           ├── Makefile  
+│           └── src  
+│               ├── btree.h  
+│               └── test.cpp  
+├── global.hpp  
+├── include  
+│   ├── cceh_pmdk.hpp  
+│   └── fastfair.hpp  
+├── kv_wrap.hpp  
+├── main.cpp  
+├── path.cmake  
+├── README.md  
+└── tests.hpp  
+
+Among these files, `main.cpp` is responsible for reading the workload file and generate a large vector that holds operations to the index data structures. `tests.hpp` includes the main frame of test (distribute work to different threads, control preread threads, collect results after tests).
+All the operations of data operations are wrapped as a class "Index" in file `kv_wrap.hpp`. CCEH and FAST &FAIR inherits class "Index", and the child classes call the functions in file `fastfair/wrap.cpp` and `cceh/CCEH-PMDK/wrap.cpp`.
 ## How does the workload file look like?
 The workload is generated via YCSB and formated by [generate_workload.py](../tools/generate_workload.py).
 Each line is an operation and an unsigned 64bit integer.

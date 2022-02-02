@@ -207,9 +207,9 @@ working threads and the string arguement is the folder path of persistent memory
 ### Change working example size for case study
 To run on different size for case study, please change -op_num=12000000 at [run.py:26](run.py#L26) to the size you like.
 ### Details
-For more details about micro-benchmarks, please go to folder [micro_benchmarks](micro_benchmarks).
+For more details about micro-benchmarks (How to run, how is the code organized), please go to folder [micro_benchmarks](micro_benchmarks).
 
-For more details about micro-benchmarks, please go to folder [case_study](case_study).
+For more details about micro-benchmarks (How to run, how is the code organized), please go to folder [case_study](case_study).
 
 ## Matching Paper Results
 Figure 2. Read amplification on a DIMM.
@@ -276,6 +276,10 @@ Figure 12. FAST & FAIR case study. This generated graph only shows the results o
 | Graph path  |  `output/case_study/fastfair.png` |
 | Plot script path  | `tools/plot_case_btree.py` |
 
+
+## Notion
+
+When the machine boots up, there could be read or write operation on the DIMMs. If you observe strange spikes on the graph, you could wait for some time and run the code again.
 ## Miscellaneous
 ### What if I forget to install some dependencies?
  If you forget to install any dependencies before running "run.py", you need to delete the "tmp" folder. Once the dependencies are fixed, the "run.py" will create "tmp" folder again.

@@ -16,6 +16,28 @@ The options include:
 - max_size: The size of max addressable space on persistent memory
 - pmm: Whether to run the bench mark on persistent memory. If yes type "-pmm", otherwise type "-nopmm"
 - test: Which test to run. Available tests are shown below.
+## Code files
+The file tree is listed below, and important code is located in `.cpp` files in folder `cases`
+.  
+├── cases  
+│   ├── common.h  
+│   ├── json.hpp  
+│   ├── lat.cpp  
+│   ├── main.cpp  
+│   ├── op_flush.h  
+│   ├── prefetching.cpp  
+│   ├── read_after_flush.cpp  
+│   ├── read_buf_amp.cpp  
+│   ├── seperate_rd_wr_buf.cpp  
+│   ├── work.json  
+│   └── write_buffer.cpp  
+├── CMakeLists.txt  
+├── compiling_config.cmake  
+├── global.h  
+├── README.md  
+└── shell_run.sh  
+
+The `cases/main.cpp` includes the main function and mmaps the persistent memory space. Tests included in `.cpp` files run on the mmaped spaces.
 ## Available tests
 ### 0. read_buf_amp_tst
 Prove the existence of PM read buffer and estimate its size.
