@@ -20,7 +20,7 @@ compiles the code and generate worloads for case studies. Please see [Usage](#us
 ## Prerequisites
 
 ### Hardware requirements
-Your machine needs to have Intel Optane DC Persistent Memory installed.
+Your machine needs to have Intel Optane DC PMM installed.
 Besides, your machine also needs AVX512, CLWB, CLFLUSH and CLFLUSHOPT instruction sets.
 
 It's encouraged to have at least 16GB space on the volatile file system `/dev/shm`, 
@@ -32,9 +32,9 @@ To check the size of your volatile file system you could use:
 df -h | grep /dev/shm
 ```
 
-Finally, it's also encouraged to install your persistent memory on NUMA node 0, if you have more than one socket, 
+Finally, it's also encouraged to install your Intel Optane DC PMM on NUMA node 0, if you have more than one socket, 
 because the benchmark and case studies runs on node 0 by default.
-To check where the persistent memory mounts, you may use
+To check where the Intel Optane DC PMM mounts, you may use
 ```
 ndctl list -v
 ```
@@ -72,20 +72,20 @@ You may install the package via:
 conda install pandas matplotlib numpy
 ```
 
-The persistent memory should be configured as non-interleaved for microbenchmarks and interleaved for case studies.
+The Intel Optane DC PMM should be configured as non-interleaved for microbenchmarks and interleaved for case studies.
 
-Set PM in non-interleaved mode:
+Set PM in non-interleaved mode. All the Intel Optane DC PMM devices must be unmounted before namespaces are destroyed.
 ```
-# destroy current namespaces on persistent memory
+# destroy current namespaces on Intel Optane DC PMM
 ndctl destroy-namespace -f all
 # reboot is required after this
 ipmctl create -goal PersistentMemoryType=AppDirectNotInterleaved
 # execute this after reboot
 ndctl create-namespace
 ```
-Set PM in interleaved mode:
+Set PM in interleaved mode. All the Intel Optane DC PMM devices must be unmounted before namespaces are destroyed.
 ```
-# destroy current namespaces on persistent memory
+# destroy current namespaces on Intel Optane DC PMM
 ndctl destroy-namespace -f all
 # reboot is required after this
 ipmctl create -goal
@@ -97,27 +97,35 @@ For more details, please refer https://docs.pmem.io/persistent-memory/getting-st
 ## Usage
 ### Before run
 Before you run, something must be set up. You need to
-1. Specify where the persistent memory pool locates for microbenchmarks.
-2. Specify where the persistent memory pool locates for the case study.
+1. Specify where the Intel Optane DC PMM pool locates for microbenchmarks.
+2. Specify where the Intel Optane DC PMM pool locates for the case study.
 3. Specify the location of your python with packages installed.
 4. Set CPU in "performance" mode.
-5. Initialize git submodules
+5. Download the code of this repository.
+6. Initialize git submodules.
 
-If your PM device is mounted at "/mnt/pmem".
+Detailed  instruction:
+1. If your PM device is mounted at "/mnt/pmem".
 The default pool path for microbenchmarks is "/mnt/pmem/bench_map_file", specified in file 
-`micro_benchmarks/compiling_config.cmake`, and that for the case study is "/mnt/pmem/", specified in
-file `case_study/path.cmake`.
-
-If your user name is `foo`, and your conda environment is installed at `/home/foo/anaconda3/bin/python`,
+`micro_benchmarks/compiling_config.cmake`.
+2. If your PM device is mounted at "/mnt/pmem".
+The default pool path arguement for case study is "/mnt/pmem/", specified in file 
+`case_study/path.cmake`.
+3. If your user name is `foo`, and your conda environment is installed at `/home/foo/anaconda3/bin/python`,
 you need to specify this in file [run.py](run.py) at the beginning as
 ```
 python_path = "/home/foo/anaconda3/bin/python"
 ```
-
+4. Run the command below as root user.
 ```
-# Set CPU in "performance" mode
 echo "performance" | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-# Initialize git submodules
+```
+5. Download the code
+```
+git clone https://github.com/lingfenghsiang/Persistent-Memory-Study.git
+```
+6. Run the command below in the repository
+```
 git submodule init
 git submodule update
 ```
@@ -149,4 +157,4 @@ mount -o dax /dev/pmem0 /mnt/pmem
 To run the prefetching test, you have to turn off the CPU prefetching,CPU prefetching, including hardware prefetching, adjacent cacheline prefetching, LLC prefetch, if there are any. Normally, the CPU prefetching configuration is included in the computer BIOS system and could be found in the advanced CPU configuration. Detailed operations varies on machines from different vendors.
 
 ### My ipmctl tool does not work.
-The offical ipmctl may not apply to 2nd generation Optane DC Persistent memory. If your ipmctl cannot configure the PM device, you need to download and compile the latest code of ipmctl. For more details please refer https://docs.pmem.io/ipmctl-user-guide/installing-ipmctl/building-and-installing-ipmctl-from-source-on-linux
+The offical ipmctl may not apply to 2nd generation Intel Optane DC PMM. If your ipmctl cannot configure the PM device, you need to download and compile the latest code of ipmctl. For more details please refer https://docs.pmem.io/ipmctl-user-guide/installing-ipmctl/building-and-installing-ipmctl-from-source-on-linux
