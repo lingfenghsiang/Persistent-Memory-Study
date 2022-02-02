@@ -12,7 +12,10 @@ compiles the code and generate worloads for case studies. Please see [Usage](#us
 - [Usage](#usage)
 	- [Before Run](#before-run)
 	- [Click and Run](#click-and-run)
+  - [Reproduce results from the paper](#reproduce-results-from-the-paper)
+  - [Change working example size for case study](#change-working-example-size-for-case-study)
   - [Details](#details)
+- [Matching Paper Results](#matching-paper-results)
 - [Miscellaneous](#Miscellaneous)
 <!-- ## Background -->
 
