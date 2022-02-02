@@ -157,7 +157,7 @@ Simply run the script is not enough. Some tests needs the machine to be reconfig
 223 plot_results()                        #step 4
 ```
 You need to follow the steps in correct order:
-> Step 1.
+> Step 1. 90 minutes and 16GB space on Intel Optane DC PMM.
 >> Set persistent memory in non-interleaved mode. [HOWTO](#set-pm-in-non-interleaved-mode)
 >
 >> Set CPU in performance mode. [HOWTO](#set-cpu-in-performance-mode)
@@ -169,7 +169,7 @@ You need to follow the steps in correct order:
 >> Run "python3 run.py".
 
 
-> Step 2.
+> Step 2. 20 minutes and 16GB space on Intel Optane DC PMM.
 >> Reboot the machine
 >
 >> Turn off the CPU prefetching in BIOS, including hardware prefetching, adjacent cacheline prefetching and LLC (last level cache) prefetching
@@ -184,7 +184,7 @@ You need to follow the steps in correct order:
 >> Run "python3
 
 > Step 3. The integer argument in "run_case_study" is the max number of
-working threads and the string arguement is the folder path of persistent memory pool, which must end with "/".
+working threads and the string arguement is the folder path of persistent memory pool, which must end with "/". 40 minutes and 32GB space on DRAM and 16GB on Intel Optane DC PMM.
 >> Restore BIOS configuration in Step 1
 >
 >> Set the persistent memory in interleaved mode. [HOWTO](#set-cpu-in-performance-mode)
