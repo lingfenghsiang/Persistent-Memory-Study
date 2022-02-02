@@ -214,11 +214,11 @@ def plot_results():
     run_plot_script("plot_case_btree.py")
     run_plot_script("plot_case_cceh.py")
 
-# prepare_microbench()
-# run_microbench_except_prefetching()
-# run_microbench_prefetching()
-# prepare_case_study()
-# run_case_study(6, "/mnt/pmem/")
+prepare_microbench()
+run_microbench_except_prefetching()
+run_microbench_prefetching()
+prepare_case_study()
+run_case_study(6, "/mnt/pmem/")
 format_logs()
 plot_results()
 
