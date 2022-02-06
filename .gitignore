@@ -9,3 +9,4 @@ pmm_stat.txt
 *.eps
 *.png
 *.log
+tmp.*

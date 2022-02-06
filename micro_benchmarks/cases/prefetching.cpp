@@ -23,7 +23,7 @@ void trigger_prefetching(void *addr, uint64_t max_size)
         }
 
         // each sequence element is 256B
-        std::vector<uint32_t> sequence((size >> 8) / granularity_buf_line);
+        std::vector<uint32_t> sequence((size >> 6) / granularity_buf_line);
         for (int i = 0; i < sequence.size(); i++)
         {
             sequence.at(i) = i;
@@ -38,7 +38,7 @@ void trigger_prefetching(void *addr, uint64_t max_size)
                 std::random_shuffle(sequence.begin(), sequence.end());
                 for (auto i : sequence)
                 {
-                    int *base_addr = (int *)(addr + ((i << 8) * granularity_buf_line));
+                    int *base_addr = (int *)(addr + ((i << 6) * granularity_buf_line));
 
 #define COMP_GRANU(i)                  \
     {                                  \
@@ -46,13 +46,10 @@ void trigger_prefetching(void *addr, uint64_t max_size)
             goto exit;                 \
     }
 
-#define DOIT(i)                                                                           \
-    sum += base_addr[i + 0] + base_addr[i + 1] + base_addr[i + 2] + base_addr[i + 3] +    \
-           base_addr[i + 4] + base_addr[i + 5] + base_addr[i + 6] + base_addr[i + 7] +    \
-           base_addr[i + 8] + base_addr[i + 9] + base_addr[i + 10] + base_addr[i + 11] +  \
-           base_addr[i + 12] + base_addr[i + 13] + base_addr[i + 14] + base_addr[i + 15]; \
+#define DOIT(i)          \
+    sum += base_addr[i]; \
     _mm_clflush(base_addr + i);
-#include "./op_flush.h"
+#include "./flush.h"
 #undef DOIT
 #undef COMP_GRANU
                 exit:
@@ -86,7 +83,7 @@ void trigger_prefetching(void *addr, uint64_t max_size)
         std::cout << "---------------------" << std::endl;
     };
 
-    for (int i = 1; i <= 4; i++)
+    for (int i = 4; i <= 4; i++)
     {
         for (uint64_t bits = 12; bits < 31; bits++)
         {
