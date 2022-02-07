@@ -69,6 +69,7 @@ int main(int argc, char **argv)
         read_after_flush,                 // 5
         access_lat,                       // 6
         read_after_flush_lock_contention, // 7
+        extreme_case_prefetching,         // 8
     };
 
     test_funcs[FLAGS_test](test_addr_namespace + uncachable_offset, FLAGS_max_size - uncachable_offset);
