@@ -152,13 +152,13 @@ void read_after_flush_lock_contention(void *addr, uint64_t max_size)
     std::atomic<int> *thread_lock = (std::atomic<int> *)&thread_lock_on_dram;
     uint64_t start_tick, end_tick, across_thread_lat = 0;
     // pthread_spinlock_t *thread_lock = (pthread_spinlock_t *)addr;
-    *thread_lock = 0;
+    *thread_lock;
     pthread_barrier_t barrier;
-    volatile uint64_t total_hold_lock_num = 0;
-    volatile uint64_t T1_miss = 0;
-    volatile uint64_t T2_miss = 0;
-    volatile uint64_t T1_lat = 0;
-    volatile uint64_t T2_lat = 0;
+    volatile uint64_t total_hold_lock_num;
+    volatile uint64_t T1_miss;
+    volatile uint64_t T2_miss;
+    volatile uint64_t T1_lat;
+    volatile uint64_t T2_lat;
     int end_flag = 0;
 
     if (numa_available() < 0)
@@ -191,13 +191,11 @@ void read_after_flush_lock_contention(void *addr, uint64_t max_size)
 
     numa_free_cpumask(cpu_mask);
 
-    pthread_barrier_init(&barrier, NULL, 2);
-
-    auto T1 = [&]()
+    auto T1 = [&](uint64_t wss)
     {
         pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), node_cpu + 0);
         register uint64_t count = 0, miss = 0, spin_round = 0, latency = 0;
-        int target_unlock = 0, target = 1, self_unlock = 2;
+        int target_unlock = 0, target = 1, self_unlock = 2, j = 0;
         pthread_barrier_wait(&barrier);
         char *work_ptr = (char *)addr;
         while (1)
@@ -211,8 +209,13 @@ void read_after_flush_lock_contention(void *addr, uint64_t max_size)
                 count++;
                 start_tick = rdtsc();
                 _mm_mfence();
-                work_ptr[0] = 10;
-                _mm_clwb(work_ptr);
+                work_ptr[j] = 10;
+                _mm_clwb(work_ptr + j);
+                j += 64;
+                if (j > wss)
+                {
+                    j = 0;
+                }
                 // reset lock status
                 // _mm_stream_si32((int *)thread_lock, self_unlock);
                 *thread_lock = self_unlock;
@@ -230,14 +233,14 @@ void read_after_flush_lock_contention(void *addr, uint64_t max_size)
         T1_miss = miss;
         T1_lat = latency / spin_round;
     };
-    auto T2 = [&]()
+    auto T2 = [&](uint64_t wss, int distance, bool read_flag)
     {
         pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), node_cpu + 1);
         register uint64_t miss = 0, latency = 0, spin_round = 0, sum = 0;
         char *work_ptr = (char *)addr;
 
         pthread_barrier_wait(&barrier);
-        int target_unlock = 2, target = 3, self_unlock = 0;
+        int target_unlock = 2, target = 3, self_unlock = 0, j = 0;
         while (1)
         {
             if (end_flag == 1)
@@ -246,9 +249,15 @@ void read_after_flush_lock_contention(void *addr, uint64_t max_size)
             if (thread_lock->compare_exchange_weak(target_unlock, target))
             {
                 // _mm_stream_si32((int *)thread_lock, self_unlock);
-                sum += work_ptr[0];
+                if (read_flag)
+                    sum += work_ptr[(j + wss - (distance << 6)) % wss];
                 _mm_mfence();
                 end_tick = rdtsc();
+                j += 64;
+                if (j > wss)
+                {
+                    j = 0;
+                }
                 across_thread_lat += end_tick - start_tick;
                 *thread_lock = self_unlock;
                 // _mm_clwb(thread_lock);
@@ -265,28 +274,53 @@ void read_after_flush_lock_contention(void *addr, uint64_t max_size)
         T2_miss = miss;
         T2_lat = latency / spin_round;
     };
-    std::cout << "max numa node num is " << numa_num_configured_nodes() << std::endl;
 
-    auto start = rdtsc();
-    std::thread instance0(T1);
-
-    std::thread instance1(T2);
-    std::this_thread::sleep_for(std::chrono::seconds(30));
-    end_flag = 1;
-    instance0.join();
-    instance1.join();
-    if (numa_run_on_node(-1) < 0)
+    auto run = [&](uint64_t wss, int distance, bool t2_read)
     {
-        perror("numa");
-        exit(EXIT_FAILURE);
-    };
+        pthread_barrier_init(&barrier, NULL, 2);
+        across_thread_lat = 0;
+        *thread_lock = 0;
+        total_hold_lock_num = 0;
+        T1_miss = 0;
+        T2_miss = 0;
+        T1_lat = 0;
+        T2_lat = 0;
+        end_flag = 0;
+        auto start = rdtsc();
+        std::thread instance0(T1, wss);
+        std::thread instance1(T2, wss, distance, t2_read);
+        std::this_thread::sleep_for(std::chrono::seconds(30));
+        end_flag = 1;
+        instance0.join();
+        instance1.join();
+        if (numa_run_on_node(-1) < 0)
+        {
+            perror("numa");
+            exit(EXIT_FAILURE);
+        };
 
-    auto end = rdtsc();
-    std::cout << "T1 get lock for: " << total_hold_lock_num << std::endl;
-    std::cout << "T1 miss for: " << T1_miss << std::endl;
-    std::cout << "T2 miss for: " << T2_miss << std::endl;
-    std::cout << "T1 latency is: " << T1_lat << std::endl;
-    std::cout << "T2 latency is: " << T2_lat << std::endl;
-    std::cout << (end - start) / total_hold_lock_num << " cycles/round" << std::endl;
-    std::cout << "across thread latency is: " << across_thread_lat / total_hold_lock_num << std::endl;
+        auto end = rdtsc();
+        std::cout << "-------result--------" << std::endl;
+        std::cout << "[T1 get lock]:[" << total_hold_lock_num << "]" << std::endl;
+        std::cout << "[T1 miss]:[" << T1_miss << "]" << std::endl;
+        std::cout << "[T2 miss]:[" << T2_miss << "]" << std::endl;
+        std::cout << "[T1 latency]:[" << T1_lat << "]" << std::endl;
+        std::cout << "[T2 latency]:[" << T2_lat << "]" << std::endl;
+        std::cout << "[distance]:[" << distance << "]" << std::endl;
+        std::cout << "[Latency per round]:[" << (end - start) / total_hold_lock_num << "](cycles/round)" << std::endl;
+        std::cout << "[across thread latency]:[" << across_thread_lat / total_hold_lock_num << "]" << std::endl;
+        if (t2_read)
+            std::cout << "[T2 read]:[" << 1 << "]" << std::endl;
+        else
+            std::cout << "[T2 read]:[" << 0 << "]" << std::endl;
+        std::cout << "---------------------" << std::endl;
+    };
+    for (int i = 0; i < 20; i++)
+    {
+        run(50000, i, true);
+    }
+    for (int i = 0; i < 20; i++)
+    {
+        run(50000, i, false);
+    }
 }
