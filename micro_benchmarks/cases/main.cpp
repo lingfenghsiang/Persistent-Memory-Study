@@ -61,13 +61,14 @@ int main(int argc, char **argv)
     // test code put here
     auto uncachable_offset = 0;
     void (*test_funcs[])(void *addr, uint64_t max_size) = {
-        read_buf_amp_tst,             //0
-        trigger_prefetching,          //1
-        write_buffer,                 //2
-        write_buffer_flushing_period, //3
-        seperate_rd_wr_buf,           //4
-        read_after_flush,             //5
-        access_lat,                   //6
+        read_buf_amp_tst,                 // 0
+        trigger_prefetching,              // 1
+        write_buffer,                     // 2
+        write_buffer_flushing_period,     // 3
+        seperate_rd_wr_buf,               // 4
+        read_after_flush,                 // 5
+        access_lat,                       // 6
+        read_after_flush_lock_contention, // 7
     };
 
     test_funcs[FLAGS_test](test_addr_namespace + uncachable_offset, FLAGS_max_size - uncachable_offset);

@@ -36,4 +36,4 @@ add_executable(microbench
 cases/main.cpp cases/read_after_flush.cpp 
 cases/prefetching.cpp cases/read_buf_amp.cpp cases/lat.cpp
 cases/seperate_rd_wr_buf.cpp cases/write_buffer.cpp)
-target_link_libraries(microbench pm_util pthread gflags)
+target_link_libraries(microbench pm_util pthread gflags numa)
