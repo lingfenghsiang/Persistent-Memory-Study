@@ -36,7 +36,7 @@ ax1.set_ylim(-200,2800)
 
 # ax1.legend(loc="upper right", fontsize = 16, ncol=2)
 # xtics= np.arange(0,34,2)
-ytics= np.arange(0,3200,250)
+ytics= np.arange(0,4000,250)
 ax1.set_yticks(ytics)
 plt.xticks(np.arange(0, 50, 5) , fontsize = 16)
 plt.yticks( fontsize = 16)

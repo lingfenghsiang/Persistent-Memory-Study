@@ -201,14 +201,53 @@ class ExpRunner():
                         bbox_inches='tight', format='png', dpi=1000, pad_inches=0.0)
 
 
+class ExpConfig:
+    def __init__(self, args=None, note=None, json_config=None, data_lists=None, plot_labels=None, fig_name = None) -> None:
+        self.args_ = args
+        self.note_ = note
+        self.json_config_ = json_config
+        self.data_lists_ = data_lists
+        self.plot_labels_ = plot_labels
+        self.fig_name_ = fig_name
+
+
+exps = {
+    "prefetch": ExpConfig(args=["-test", "1"],
+                          note="prefetch_no",
+                          json_config=["microbench_trigger_prefetching.csv",
+                                       "wss",    ["granularity"]],
+                          data_lists=["wss", " 256 imc read ratio", " 256 pm read ratio", " 512 imc read ratio",
+                                      " 512 pm read ratio", " 1024 imc read ratio", " 1024 pm read ratio"],
+                          plot_labels=["wss", "rd_ratio_imc_256", "rd_ratio_pm_256", "rd_ratio_imc_512",
+                                       "rd_ratio_pm_512", "rd_ratio_imc_1024", "rd_ratio_pm_1024"],
+                          fig_name="prefetch.png"),
+    "prefetch_optimize": ExpConfig(
+        args=["-test", "8"],
+        note= "prefetch_optimize",
+        json_config=["prefetch_optimize.csv",
+                                       "wss",    ["type"]]
+    ),
+    "rap": ExpConfig(
+        json_config=["rap.csv",
+                     "distance",    ["method"]]
+    )
+}
+
+
 runner = ExpRunner("tmp", 0)
+exp_candidate = exps["prefetch_optimize"]
+
 log_name = runner.run_exp("build_benchmark/bin/microbench",
-                     ["-test", "1"], "prefetch_dcu_streamer")
-formatted_log_name = runner.format_log(log_name, ["microbench_trigger_prefetching.csv",
-                                                          "wss",    ["granularity"]])
-runner.plotData(formatted_log_name,
-    ["wss", " 256 imc read ratio", " 256 pm read ratio", " 512 imc read ratio", " 512 pm read ratio", " 1024 imc read ratio", " 1024 pm read ratio"] ,
-    ["wss","rd_ratio_imc_256", "rd_ratio_pm_256","rd_ratio_imc_512", "rd_ratio_pm_512","rd_ratio_imc_1024", "rd_ratio_pm_1024"], 
-    os.path.join(runner.tmp_dir_, "prefetch.png")
-)
+                          exp_candidate.args_, exp_candidate.note_)
+
+formatted_log_name = runner.format_log(log_name, exp_candidate.json_config_)
+# runner.plotData("/home/xlf/Documents/Persistent-Memory-Study/tmp/optimize_prefetching.csv",[],[])
+
+# formatted_log_name = runner.format_log(log_name, ["microbench_trigger_prefetching.csv",
+#                                                           "wss",    ["granularity"]])
+# runner.plotData(formatted_log_name,
+#     ["wss", " 256 imc read ratio", " 256 pm read ratio", " 512 imc read ratio", " 512 pm read ratio", " 1024 imc read ratio", " 1024 pm read ratio"] ,
+#     ["wss","rd_ratio_imc_256", "rd_ratio_pm_256","rd_ratio_imc_512", "rd_ratio_pm_512","rd_ratio_imc_1024", "rd_ratio_pm_1024"], 
+#     os.path.join(runner.tmp_dir_, "prefetch.png")
+# )
 runner.send_server("test over","test over")
