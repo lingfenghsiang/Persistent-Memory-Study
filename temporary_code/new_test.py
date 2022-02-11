@@ -201,14 +201,38 @@ class ExpRunner():
                         bbox_inches='tight', format='png', dpi=1000, pad_inches=0.0)
 
 
-runner = ExpRunner("tmp", 0)
+runner = ExpRunner("tmp", 1)
 log_name = runner.run_exp("build_benchmark/bin/microbench",
-                     ["-test", "1"], "prefetch_dcu_streamer")
-formatted_log_name = runner.format_log(log_name, ["microbench_trigger_prefetching.csv",
-                                                          "wss",    ["granularity"]])
-runner.plotData(formatted_log_name,
-    ["wss", " 256 imc read ratio", " 256 pm read ratio", " 512 imc read ratio", " 512 pm read ratio", " 1024 imc read ratio", " 1024 pm read ratio"] ,
-    ["wss","rd_ratio_imc_256", "rd_ratio_pm_256","rd_ratio_imc_512", "rd_ratio_pm_512","rd_ratio_imc_1024", "rd_ratio_pm_1024"], 
-    os.path.join(runner.tmp_dir_, "prefetch.png")
-)
-runner.send_server("test over","test over")
+                     ["-test", "5", "-nopmm"], "read_after_flush")
+
+# log_name = "/home/xlf/Documents/Persistent-Memory-Study/tmp/read_after_flush.2022-02-10-17:46:38.log"
+
+
+formatted_log_name = runner.format_log(log_name, ["rap.csv",
+                                                          "distance",    ["method"]])
+runner.plotData("/home/xlf/Documents/Persistent-Memory-Study/tmp/optimize_prefetching.csv",[],[])
+
+
+# ["wss", " 256 imc read ratio", " 256 pm read ratio", " 512 imc read ratio", " 512 pm read ratio", " 1024 imc read ratio", " 1024 pm read ratio"] ,
+# ["wss","rd_ratio_imc_256", "rd_ratio_pm_256","rd_ratio_imc_512", "rd_ratio_pm_512","rd_ratio_imc_1024", "rd_ratio_pm_1024"], 
+
+# runner.plotData("/home/xlf/Documents/Persistent-Memory-Study/tmp/optimize_prefetching.csv",
+#                 ["wss",
+#                  " normal load latency",
+#                 #  " normal load imc read",
+#                 #  " normal load pm read",
+#                  " nt cpy then load latency",
+#                 #  " nt cpy then load imc read",
+#                 #  " nt cpy then load pm read"
+#                  ],
+#                 ["wss",
+#                  "original latency",
+#                 #  "original imc read",
+#                 #  "original pm read",
+#                  "optimized latency",
+#                 #  "optimized imc read",
+#                 #  "optimized pm read"
+#                  ],
+#                 os.path.join(runner.tmp_dir_, "prefetch.png")
+# )
+# runner.send_server("test over","test over")
