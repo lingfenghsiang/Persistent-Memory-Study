@@ -134,10 +134,11 @@ void extreme_case_prefetching(void *addr, uint64_t max_size)
         working_unit_array[access_order.at(unit_num - 1)].next = &working_unit_array[access_order.at(0)];
         _mm_mfence();
         std::vector<util::DimmObj> dimm_array;
+        register uint64_t latency = 0;
         {
-
             util::PmmDataCollector measure("DIMM data", &dimm_array);
             register int sum = 0;
+            
             register working_unit_t *tmp_ptr;
             __m256i bit256_buf;
             working_unit_t *starting_ptr, *working_ptr;
@@ -146,6 +147,7 @@ void extreme_case_prefetching(void *addr, uint64_t max_size)
                 working_ptr = starting_ptr = working_unit_array + rand() % unit_num;
                 for (;;)
                 {
+                    auto start = rdtsc();
                     // do tasks here
                     if (with_prefetch)
                     {
@@ -184,7 +186,8 @@ void extreme_case_prefetching(void *addr, uint64_t max_size)
 #include "./prefetching_work_case.h"
 #undef DOIT
                     }
-
+                    auto end = rdtsc();
+                    latency += end - start;
                     tmp_ptr = working_ptr->next;
                     _mm_clflush(working_ptr->cacheline0);
                     _mm_clflush(working_ptr->cacheline1);
@@ -215,6 +218,7 @@ void extreme_case_prefetching(void *addr, uint64_t max_size)
         std::cout << "[ideal read]:[" << unit_num * sizeof(struct working_unit_t) / (1ULL << 20) * iterations << "](MB)" << std::endl;
         std::cout << "[imc read]:[" << target_dimm->imc_read << "](MB)" << std::endl;
         std::cout << "[pm read]:[" << target_dimm->media_rd << "](MB)" << std::endl;
+        std::cout << "[latency]:[" << latency / unit_num / iterations << "](CPU cycles)" << std::endl;
         if (with_prefetch)
         {
             std::cout << "[type]:[normal load]" << std::endl;
