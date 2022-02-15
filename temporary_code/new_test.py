@@ -264,8 +264,8 @@ exps = {
 }
 
 
-runner = ExpRunner("tmp", 1)
-exp_candidate = exps["rap"]
+runner = ExpRunner("tmp", 0)
+exp_candidate = exps["prefetch"]
 
 log_name = runner.run_exp("build_benchmark/bin/microbench",
                           exp_candidate.args_, exp_candidate.note_)
@@ -274,9 +274,9 @@ formatted_log_name = runner.format_log(log_name, exp_candidate.json_config_)
 # formatted_log_name = os.path.join(
 #     this_file_dir, "..", "tmp", exp_candidate.json_config_[0])
 
-# runner.plotData(formatted_log_name,
-#                 exp_candidate.data_lists_,
-#                 exp_candidate.plot_labels_,
-#                 os.path.join(runner.tmp_dir_, exp_candidate.fig_name_)
-#                 )
+runner.plotData(formatted_log_name,
+                exp_candidate.data_lists_,
+                exp_candidate.plot_labels_,
+                os.path.join(runner.tmp_dir_, exp_candidate.fig_name_)
+                )
 runner.send_server("test over", "test over")

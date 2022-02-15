@@ -68,8 +68,8 @@ def run_case_study(max_worker, pmem_directory):
                                                "cceh_preread_" + media_type + ".log")
             os.system(run_cmd)
             os.remove(os.path.join(os.path.abspath(pmem_dir), "cceh_pmempool"))
-    cceh_test(True)
-    cceh_test(False)
+    # cceh_test(True)
+    # cceh_test(False)
 
 def prepare_microbench():
     src_dir = os.path.join(this_file_dir, "micro_benchmarks")
@@ -214,11 +214,11 @@ def plot_results():
     run_plot_script("plot_case_btree.py")
     run_plot_script("plot_case_cceh.py")
 
-prepare_microbench()
-run_microbench_except_prefetching()
-run_microbench_prefetching()
-prepare_case_study()
-run_case_study(6, "/mnt/pmem/")
+# prepare_microbench()
+# run_microbench_except_prefetching()
+# run_microbench_prefetching()
+# prepare_case_study()
+run_case_study(8, "/mnt/pmem/")
 format_logs()
 plot_results()
 
