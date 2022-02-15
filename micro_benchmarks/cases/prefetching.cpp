@@ -396,7 +396,7 @@ void rd_throughput_against_prefetching(void *addr, uint64_t max_size)
         }
         std::cout << "[pm throughput]:[" << target_dimm->media_rd / elapsed_time.count() << "](GB/s)" << std::endl;
         std::cout << "[thread num]:[" << thread_num <<"]" <<std::endl;
-        std::cout << "[perceived throughput]:[" << per_thread_unit_num * thread_num * sizeof(struct working_unit_t) / (1ULL << 20) * iterations / elapsed_time.count() << "](GB/s)" << std::endl;
+        std::cout << "[perceived throughput]:[" << 1.0 * per_thread_unit_num * thread_num * sizeof(struct working_unit_t) / (1ULL << 20) * iterations / elapsed_time.count() << "](GB/s)" << std::endl;
         std::cout << "---------------------" << std::endl;
     };
     for (int i = 1; i <= 16; i++)

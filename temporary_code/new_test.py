@@ -192,7 +192,7 @@ class ExpRunner():
         csv_data_name = json_config[0]
         return os.path.join(self.tmp_dir_, csv_data_name)
 
-    def plotData(self, data_path, titles: List[Str], labels: List[Str], fig_name="tmp.png"):
+    def plotData(self, data_path, titles: List[Str], labels: List[Str], axis_mode:bool = True, fig_name="tmp.png"):
         df = pd.read_csv(data_path)
         XAxis = df[titles[0]].to_numpy()
         fig, ax1 = plt.subplots(figsize=(8, 4.96))
@@ -202,7 +202,8 @@ class ExpRunner():
             plot0 = ax1.plot(
                 XAxis, data, label=labels[i], markersize=10, linewidth=2)
         ax1.set_xlabel(labels[0], fontsize=16)
-        ax1.set_xscale("log", base=2)
+        if axis_mode:
+            ax1.set_xscale("log", base=2)
         plt.grid()
         ax1.legend()
         foo_fig = plt.gcf()  # 'get current figure'
@@ -260,23 +261,48 @@ exps = {
         note="read_after_persist",
         json_config=["rap.csv",
                      "distance",    ["method"]]
+    ),
+    "rd_throughput_prefetch": ExpConfig(
+        args=["-test", "9"],
+        note="read_throuput_against_prefetch",
+        json_config=["read_throuput_against_prefetch.csv",
+                     "thread num",    ["type"]],
+        data_lists=["thread num",
+                    " normal load latency",
+                    " nt cpy then load latency",
+                    # " normal load pm throughput",
+                    # " normal load perceived throughput",
+                    # " nt cpy then load pm throughput",
+                    # " nt cpy then load perceived throughput",
+                    ],
+        plot_labels=["thread num",
+                     "normal latency",
+                     "optimized latency",
+                    #  "normal pm throughput",
+                    #  "normal perceived throughput",
+                    #  "optimized pm throughput",
+                    #  "optimized perceived throughput",
+                     ],
+        fig_name="prefetch_multithread_rd.png"
     )
 }
 
 
 runner = ExpRunner("tmp", 0)
-exp_candidate = exps["prefetch"]
+exp_candidate = exps["rd_throughput_prefetch"]
 
-log_name = runner.run_exp("build_benchmark/bin/microbench",
-                          exp_candidate.args_, exp_candidate.note_)
-formatted_log_name = runner.format_log(log_name, exp_candidate.json_config_)
+# log_name = runner.run_exp("build_benchmark/bin/microbench",
+#                           exp_candidate.args_, exp_candidate.note_)
 
-# formatted_log_name = os.path.join(
-#     this_file_dir, "..", "tmp", exp_candidate.json_config_[0])
+# formatted_log_name = runner.format_log(log_name, exp_candidate.json_config_)
 
-runner.plotData(formatted_log_name,
-                exp_candidate.data_lists_,
-                exp_candidate.plot_labels_,
-                os.path.join(runner.tmp_dir_, exp_candidate.fig_name_)
+formatted_log_name = os.path.join(
+    this_file_dir, "..", "tmp", exp_candidate.json_config_[0])
+
+runner.plotData(data_path = formatted_log_name,
+                titles = exp_candidate.data_lists_,
+                labels = exp_candidate.plot_labels_,
+                axis_mode=False,
+                fig_name = os.path.join(runner.tmp_dir_, exp_candidate.fig_name_)
                 )
-runner.send_server("test over", "test over")
+# runner.send_server("test over", "test over")
