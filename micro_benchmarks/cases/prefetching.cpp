@@ -1,4 +1,5 @@
 #include "common.h"
+#include <numa.h>
 
 static int user_result_dummy = 0;
 /**
@@ -85,12 +86,9 @@ void trigger_prefetching(void *addr, uint64_t max_size)
         std::cout << "---------------------" << std::endl;
     };
 
-    for (int i = 1; i <= 4; i++)
+    for (uint64_t bits = 12; bits < 31; bits++)
     {
-        for (uint64_t bits = 12; bits < 31; bits++)
-        {
-            func(1ULL << bits, 1ULL << (33 - bits), i);
-        }
+        func(1ULL << bits, 1ULL << (33 - bits), 1);
     }
 }
 
@@ -244,6 +242,41 @@ void rd_throughput_against_prefetching(void *addr, uint64_t max_size)
         uint64_t latency;
     };
     std::vector<struct FeedBack> feed_back;
+
+    if (numa_available() < 0)
+    {
+        perror("numa not available");
+        exit(EXIT_FAILURE);
+    }
+
+    struct bitmask *cpu_mask = numa_allocate_cpumask();
+    int max_cpu_per_node = 0;
+    cpu_set_t node_cpu[2];
+    for (int i = 0; i < 2; i++)
+    {
+        int cpu_num = 0;
+        CPU_ZERO(node_cpu + i);
+        if (numa_node_to_cpus(i, cpu_mask))
+        {
+            perror("numa_node");
+            exit(EXIT_FAILURE);
+        };
+
+        for (int j = 0; j < cpu_mask->size; j++)
+        {
+            unsigned long idx = j / (sizeof(*cpu_mask->maskp) * 8);
+            unsigned long bit = j % (sizeof(*cpu_mask->maskp) * 8);
+            if (cpu_mask->maskp[idx] & (1UL << j))
+            {
+                cpu_num += 1;
+                CPU_SET(j, node_cpu + i);
+            }
+        }
+        max_cpu_per_node = cpu_num > max_cpu_per_node ? cpu_num : max_cpu_per_node;
+    }
+
+    numa_free_cpumask(cpu_mask);
+
     auto worker_unit = [&](uint64_t thread_id, uint64_t unit_num, int iterations, bool with_prefetch)
     {
         if (unit_num * sizeof(working_unit_t) > max_size)
@@ -256,6 +289,7 @@ void rd_throughput_against_prefetching(void *addr, uint64_t max_size)
             perror("working set size too small");
             exit(EXIT_FAILURE);
         }
+        pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), node_cpu + 0);
         // shuffle the order to access the units
         std::vector<int> access_order(unit_num);
         for (int i = 0; i < unit_num; i++)
@@ -399,11 +433,11 @@ void rd_throughput_against_prefetching(void *addr, uint64_t max_size)
         std::cout << "[perceived throughput]:[" << 1.0 * per_thread_unit_num * thread_num * sizeof(struct working_unit_t) / (1ULL << 20) * iterations / elapsed_time.count() << "](GB/s)" << std::endl;
         std::cout << "---------------------" << std::endl;
     };
-    for (int i = 1; i <= 16; i++)
+    for (int i = 1; i <= max_cpu_per_node; i++)
     {
         run(i, (1ULL << 30), 10, true);
     }
-    for (int i = 1; i <= 16; i++)
+    for (int i = 1; i <= max_cpu_per_node; i++)
     {
         run(i, (1ULL << 30), 10, false);
     }

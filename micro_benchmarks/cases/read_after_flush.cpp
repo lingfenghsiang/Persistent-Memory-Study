@@ -60,23 +60,26 @@ void read_after_flush(void *addr, uint64_t max_size)
     {
         char *work_ptr = (char *)addr;
         // volatile int tmp_buf=0;
-        float imc_rd, imc_wr, media_rd, media_wr;
+        float imc_rd = 0, imc_wr = 0, media_rd = 0, media_wr = 0;
         uint64_t start_timer, end_timer;
         register int sum = 0;
         {
 
             memset(&data_to_write, 0, sizeof(data_to_write));
 
-            util::PmmDataCollector measure("PMM data", &imc_rd, &imc_wr, &media_rd, &media_wr);
+            // util::PmmDataCollector measure("PMM data", &imc_rd, &imc_wr, &media_rd, &media_wr);
             start_timer = rdtsc();
             for (int i = 0; i < iterations; i++)
             {
                 for (uint64_t j = 0; j < working_set_size; j += 64)
                 {
-                    wr_op(work_ptr + j);
-                    // _mm512_stream_ps((float *)(work_ptr + j), data_to_write);
-                    //     work_ptr[j] = i;
-                    // _mm_clwb(work_ptr + j);
+                    *((int *)(work_ptr + j)) += 10;
+                    _mm_clwb(work_ptr + j);
+                    // _mm_mfence();
+                    //                 wr_op(work_ptr + j);
+                    //                 // _mm512_stream_ps((float *)(work_ptr + j), data_to_write);
+                    //                 //     work_ptr[j] = i;
+                    //                 // _mm_clwb(work_ptr + j);
                     _mm_sfence();
                     // for (int k = 0; k < 20; k++)
                     // {
@@ -123,26 +126,31 @@ void read_after_flush(void *addr, uint64_t max_size)
         std::cout << "---------------------" << std::endl;
         user_result_dummy += sum;
     };
-    wr_op = wr_nt_mfence;
-    for (int i = 0; i < 70; i++)
-    {
-        func(1ULL << 13, 50000, i);
-    }
-    wr_op = wr_clwb_mfence;
-    for (int i = 0; i < 70; i++)
-    {
-        func(1ULL << 13, 50000, i);
-    }
-    wr_op = wr_nt_sfence;
-    for (int i = 0; i < 70; i++)
-    {
-        func(1ULL << 13, 50000, i);
-    }
+    // wr_op = wr_nt_mfence;
+    // for (int i = 0; i < 70; i++)
+    // {
+    //     func(1ULL << 13, 50000, i);
+    // }
+    // wr_op = wr_clwb_mfence;
+    // for (int i = 0; i < 70; i++)
+    // {
+    //     func(1ULL << 13, 50000, i);
+    // }
+    // wr_op = wr_nt_sfence;
+    // for (int i = 0; i < 70; i++)
+    // {
+    //     func(1ULL << 13, 50000, i);
+    // }
+    // wr_op = wr_clwb_sfence;
+    // for (int i = 0; i < 70; i++)
+    // {
+    //     func(1ULL << 13, 50000, i);
+    // }
     wr_op = wr_clwb_sfence;
-    for (int i = 0; i < 70; i++)
-    {
-        func(1ULL << 13, 50000, i);
-    }
+    util::debug_perf_ppid();
+    util::debug_perf_switch();
+    func(1ULL << 13, 5000000, 0);
+    util::debug_perf_switch();
 }
 
 void read_after_flush_lock_contention(void *addr, uint64_t max_size)
