@@ -213,7 +213,7 @@ void extreme_case_prefetching(void *addr, uint64_t max_size)
         }
         std::cout << "-------result--------" << std::endl;
         std::cout << "[wss]:[" << unit_num * sizeof(struct working_unit_t) << "](B)" << std::endl;
-        std::cout << "[ideal read]:[" << unit_num * sizeof(struct working_unit_t) / (1ULL << 20) * iterations << "](MB)" << std::endl;
+        std::cout << "[ideal read]:[" << 1.0 * unit_num / (1ULL << 20) * iterations * sizeof(struct working_unit_t)  << "](MB)" << std::endl;
         std::cout << "[imc read]:[" << target_dimm->imc_read << "](MB)" << std::endl;
         std::cout << "[pm read]:[" << target_dimm->media_rd << "](MB)" << std::endl;
         std::cout << "[latency]:[" << latency / unit_num / iterations << "](CPU cycles)" << std::endl;

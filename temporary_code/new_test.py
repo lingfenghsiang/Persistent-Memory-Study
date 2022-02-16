@@ -223,7 +223,7 @@ class ExpConfig:
 
 exps = {
     "prefetch": ExpConfig(args=["-test", "1"],
-                          note="prefetch_no",
+                          note="prefetch_dcu_streamer",
                           json_config=["microbench_trigger_prefetching.csv",
                                        "wss",    ["granularity"]],
                           data_lists=["wss", " 256 imc read ratio", " 256 pm read ratio"],
@@ -289,18 +289,18 @@ exps = {
 runner = ExpRunner("tmp", 0)
 exp_candidate = exps["rd_throughput_prefetch"]
 
-# log_name = runner.run_exp("build_benchmark/bin/microbench",
-#                           exp_candidate.args_, exp_candidate.note_)
+log_name = runner.run_exp("build_benchmark/bin/microbench",
+                          exp_candidate.args_, exp_candidate.note_)
 
-# formatted_log_name = runner.format_log(log_name, exp_candidate.json_config_)
+formatted_log_name = runner.format_log(log_name, exp_candidate.json_config_)
 
-formatted_log_name = os.path.join(
-    this_file_dir, "..", "tmp", exp_candidate.json_config_[0])
+# formatted_log_name = os.path.join(
+#     this_file_dir, "..", "tmp", exp_candidate.json_config_[0])
 
 runner.plotData(data_path = formatted_log_name,
                 titles = exp_candidate.data_lists_,
                 labels = exp_candidate.plot_labels_,
-                axis_mode=False,
+                axis_mode=True,
                 fig_name = os.path.join(runner.tmp_dir_, exp_candidate.fig_name_)
                 )
 # runner.send_server("test over", "test over")
