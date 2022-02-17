@@ -258,7 +258,7 @@ exps = {
         args= ["-test", "5"],
         note="read_after_persist",
         json_config=["rap.csv",
-                     "distance",    ["method"]]
+                     "distance",    ["method", "on dram", "remote"]]
     ),
     "rd_throughput_prefetch": ExpConfig(
         args=["-test", "9"],
@@ -287,7 +287,7 @@ exps = {
 
 
 runner = ExpRunner("tmp", 0)
-exp_candidate = exps["rd_throughput_prefetch"]
+exp_candidate = exps["rap"]
 
 log_name = runner.run_exp("build_benchmark/bin/microbench",
                           exp_candidate.args_, exp_candidate.note_)

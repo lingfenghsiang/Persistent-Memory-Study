@@ -1,16 +1,11 @@
 #include "common.h"
 #include <numa.h>
+#include <numaif.h>
 
 void tmp_test(void *addr, uint64_t max_size);
 
 __m512 data_to_write;
 
-static inline void wr_clwb(void *addr)
-{
-    *((int *)addr) += 10;
-    _mm_clwb(addr);
-    // _mm_sfence();
-}
 
 static inline void wr_clwb_sfence(void *addr)
 {
@@ -24,13 +19,6 @@ static inline void wr_clwb_mfence(void *addr)
     *((int *)addr) += 10;
     _mm_clwb(addr);
     _mm_mfence();
-}
-
-static inline void wr_nt(void *addr)
-{
-    _mm512_stream_ps((float *)addr, data_to_write);
-    // _mm512_stream_si512((__m512i *)addr, cl_buffer);
-    // _mm_sfence();
 }
 
 static inline void wr_nt_sfence(void *addr)
@@ -54,53 +42,70 @@ static inline void rd(void *addr)
 static int user_result_dummy = 0;
 void read_after_flush(void *addr, uint64_t max_size)
 {
-    // posix_memalign(&addr, 64, 1ULL << 12);
-    void (*wr_op)(void *);
-    auto func = [&](uint64_t working_set_size, int iterations, int cl_distance)
+    /** we assert that pm address is on NUMA node 0,
+     * we also allocate some volatile memory on NUMA node 0
+     */
+    size_t ws_size = 1ULL << 13;
+    void *DRAM_addr = numa_alloc_onnode(ws_size, 0);
+    if (!DRAM_addr)
     {
-        char *work_ptr = (char *)addr;
-        // volatile int tmp_buf=0;
+        perror("NUMA alloc failed");
+        exit(EXIT_FAILURE);
+    }
+    
+    struct bitmask *cpu_mask = numa_allocate_cpumask();
+    cpu_set_t node_cpu[2];
+    for (int i = 0; i < 2; i++)
+    {
+        CPU_ZERO(node_cpu + i);
+        if (numa_node_to_cpus(i, cpu_mask))
+        {
+            perror("numa_node");
+            exit(EXIT_FAILURE);
+        };
+
+        for (int j = 0; j < cpu_mask->size; j++)
+        {
+            unsigned long idx = j / (sizeof(*cpu_mask->maskp) * 8);
+            unsigned long bit = j % (sizeof(*cpu_mask->maskp) * 8);
+            if (cpu_mask->maskp[idx] & (1UL << j))
+            {
+                CPU_SET(j, node_cpu + i);
+            }
+        }
+    }
+    numa_free_cpumask(cpu_mask);
+
+    void (*wr_op)(void *);
+    auto func = [&](uint64_t working_set_size, int iterations, int cl_distance, int numa_node, bool on_dram)
+    {
+        pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), node_cpu + numa_node);
+        char *work_ptr;
+        if (~on_dram)
+            work_ptr = (char *)addr;
+        else
+            work_ptr = (char *)DRAM_addr;
+
         float imc_rd = 0, imc_wr = 0, media_rd = 0, media_wr = 0;
         uint64_t start_timer, end_timer;
         register int sum = 0;
         {
-
+            util::PmmDataCollector measure("dimm", &imc_rd, &imc_wr, &media_rd, &media_wr);
             memset(&data_to_write, 0, sizeof(data_to_write));
 
-            // util::PmmDataCollector measure("PMM data", &imc_rd, &imc_wr, &media_rd, &media_wr);
             start_timer = rdtsc();
             for (int i = 0; i < iterations; i++)
             {
                 for (uint64_t j = 0; j < working_set_size; j += 64)
                 {
-                    *((int *)(work_ptr + j)) += 10;
-                    _mm_clwb(work_ptr + j);
-                    // _mm_mfence();
-                    //                 wr_op(work_ptr + j);
-                    //                 // _mm512_stream_ps((float *)(work_ptr + j), data_to_write);
-                    //                 //     work_ptr[j] = i;
-                    //                 // _mm_clwb(work_ptr + j);
-                    _mm_sfence();
-                    // for (int k = 0; k < 20; k++)
-                    // {
-                    //     tmp_buf++;
-                    // }
-                    // work_ptr[(j + working_set_size - (cl_distance << 6)) % working_set_size] = 0;
+                    wr_op(work_ptr + j);
                     sum += work_ptr[(j + working_set_size - (cl_distance << 6)) % working_set_size];
                 }
             }
             end_timer = rdtsc();
         }
         std::cout << "-------result--------" << std::endl;
-        if (wr_op == wr_nt)
-        {
-            std::cout << "[method]:[nt]" << std::endl;
-        }
-        else if (wr_op == wr_clwb)
-        {
-            std::cout << "[method]:[clwb]" << std::endl;
-        }
-        else if (wr_op == wr_clwb_sfence)
+        if (wr_op == wr_clwb_sfence)
         {
             std::cout << "[method]:[wr_clwb_sfence]" << std::endl;
         }
@@ -122,35 +127,42 @@ void read_after_flush(void *addr, uint64_t max_size)
                   << "], [RA]: [" << media_rd / imc_rd
                   << "], [imc wr]: [" << imc_wr
                   << "], [imc rd]: [" << imc_rd
+                  << "], [remote]: [" << numa_node
+                  << "], [on dram]: [" << on_dram
                   << "]" << std::endl;
         std::cout << "---------------------" << std::endl;
         user_result_dummy += sum;
     };
-    // wr_op = wr_nt_mfence;
-    // for (int i = 0; i < 70; i++)
-    // {
-    //     func(1ULL << 13, 50000, i);
-    // }
-    // wr_op = wr_clwb_mfence;
-    // for (int i = 0; i < 70; i++)
-    // {
-    //     func(1ULL << 13, 50000, i);
-    // }
-    // wr_op = wr_nt_sfence;
-    // for (int i = 0; i < 70; i++)
-    // {
-    //     func(1ULL << 13, 50000, i);
-    // }
-    // wr_op = wr_clwb_sfence;
-    // for (int i = 0; i < 70; i++)
-    // {
-    //     func(1ULL << 13, 50000, i);
-    // }
-    wr_op = wr_clwb_sfence;
-    util::debug_perf_ppid();
-    util::debug_perf_switch();
-    func(1ULL << 13, 5000000, 0);
-    util::debug_perf_switch();
+    bool on_dram = false;
+    do
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            wr_op = wr_nt_mfence;
+            for (int i = 0; i < 70; i++)
+            {
+                func(1ULL << 13, 50000, i, j, on_dram);
+            }
+            wr_op = wr_clwb_mfence;
+            for (int i = 0; i < 70; i++)
+            {
+                func(1ULL << 13, 50000, i, j, on_dram);
+            }
+            wr_op = wr_nt_sfence;
+            for (int i = 0; i < 70; i++)
+            {
+                func(1ULL << 13, 50000, i, j, on_dram);
+            }
+            wr_op = wr_clwb_sfence;
+            for (int i = 0; i < 70; i++)
+            {
+                func(1ULL << 13, 50000, i, j, on_dram);
+            }
+        }
+        on_dram = ~on_dram;
+    } while (on_dram);
+
+    numa_free(DRAM_addr, ws_size);
 }
 
 void read_after_flush_lock_contention(void *addr, uint64_t max_size)
