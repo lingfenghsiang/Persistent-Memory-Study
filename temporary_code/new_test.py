@@ -287,7 +287,7 @@ exps = {
 
 
 runner = ExpRunner("tmp", 0)
-exp_candidate = exps["rap"]
+exp_candidate = exps["prefetch"]
 
 log_name = runner.run_exp("build_benchmark/bin/microbench",
                           exp_candidate.args_, exp_candidate.note_)

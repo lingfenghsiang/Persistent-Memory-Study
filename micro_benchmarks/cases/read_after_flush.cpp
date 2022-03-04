@@ -81,7 +81,7 @@ void read_after_flush(void *addr, uint64_t max_size)
     {
         pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), node_cpu + numa_node);
         char *work_ptr;
-        if (~on_dram)
+        if (!on_dram)
             work_ptr = (char *)addr;
         else
             work_ptr = (char *)DRAM_addr;
@@ -159,7 +159,7 @@ void read_after_flush(void *addr, uint64_t max_size)
                 func(1ULL << 13, 50000, i, j, on_dram);
             }
         }
-        on_dram = ~on_dram;
+        on_dram = !on_dram;
     } while (on_dram);
 
     numa_free(DRAM_addr, ws_size);
