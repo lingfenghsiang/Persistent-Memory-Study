@@ -22,11 +22,7 @@ void nt_bzero(void *addr, uint64_t size)
 DEFINE_string(pool_dir, PERSISTENT_POOL_DIR, "where to put the pool file");
 DEFINE_uint64(max_size, PERSISTENT_MAP_SIZE, "maximum_pool_size in bytes");
 DEFINE_bool(pmm, true, "shall we run the test on pm?");
-DEFINE_int32(test, 2, "tests to run, available tests include:\n\
-0. Read amplification test.\n\
-1. Prefetching test.\n\
-2. write buffer test.\n\
-3. write buffer flushing period test. ");
+DEFINE_int32(test, 0, "tests to run");
 
 int main(int argc, char **argv)
 {

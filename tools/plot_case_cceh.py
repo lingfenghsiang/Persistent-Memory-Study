@@ -67,7 +67,7 @@ ax0.set_ylabel('Latency(CPU cycle)',fontsize = 16)
 ax1.set_ylabel('Throughput(Mops/s)',fontsize = 16)
 ax2.set_ylabel('Latency(CPU cycle)',fontsize = 16)
 ax3.set_ylabel('Throughput(Mops/s)',fontsize = 16)
-print(helper_load_pm_bw/no_helper_load_pm_bw)
+
 ax0.set_xticks(x)
 ax0.set_xticklabels(threads.astype(int))
 ax2.set_xticks(x)

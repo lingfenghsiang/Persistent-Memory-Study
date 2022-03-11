@@ -1,14 +1,219 @@
 import os
 import shutil
+import pandas as pd
+import matplotlib.pyplot as plt
+from typing import List
+from datetime import datetime
+import json
+
 
 this_file_dir = os.path.abspath(os.path.dirname(__file__))
 tmp_dir = os.path.join(this_file_dir, "tmp")
-
+tool_path = os.path.join(this_file_dir,
+                         "tools", "format_log.py")
 python_path = "/home/xlf/anaconda3/bin/python"
 
 if not os.path.isdir(tmp_dir):
     os.makedirs(tmp_dir)
 
+
+class ExpRunner():
+    def __init__(self, log_path: str, numa_node: int = 0, python_path: str = "/home/xlf/anaconda3/bin/python") -> None:
+        this_file_dir = os.path.abspath(os.path.dirname(__file__))
+        self.project_dir_ = os.path.join(this_file_dir)
+        self.tmp_dir_ = os.path.join(self.project_dir_, "tmp")
+        self.python_path_ = python_path
+        self.tool_path_ = os.path.join(self.project_dir_,
+                                       "tools")
+        self.output_base_dir_ = os.path.join(self.project_dir_, "output")
+        if numa_node >= 0:
+            self.numa_cmd_ = "numactl -N " + str(numa_node)
+        else:
+            self.numa_cmd_ = ""
+        if os.path.isabs(log_path):
+            self.log_path_ = log_path
+        else:
+            self.log_path_ = os.path.join(self.project_dir_, log_path)
+
+    def run_exp(self, bin_file: str, args: List[str], note: str = "tmp"):
+        now = datetime.now()
+        time_stamp = now.strftime("%Y-%m-%d-%H:%M:%S")
+        log_name = note + "." + time_stamp + ".log"
+        if not os.path.isabs(bin_file):
+            bin_file = os.path.join(self.project_dir_, bin_file)
+        cmd = self.numa_cmd_ + " " + bin_file + " " + \
+            " ".join(args) + " > " + os.path.join(self.tmp_dir_, log_name)
+        os.system(cmd)
+        return os.path.join(self.tmp_dir_, log_name)
+
+    def generate_json(self, data, file_name):
+        with open(file_name, 'w') as outfile:
+            json.dump(data, outfile)
+
+    def format_log(self, log_path, json_config, out_path):
+        if not os.path.isabs(log_path):
+            log_path = os.path.join(self.tmp_dir_, log_path)
+        json_config_path = os.path.join(self.tmp_dir_, "tmp.json")
+        self.generate_json(json_config, json_config_path)
+        format_log_cmd = self.python_path_ + " " + tool_path +\
+            " -log_path=" + log_path +\
+            " -config_path=" + json_config_path +\
+            " -tmp_dir=" + self.tmp_dir_ +\
+            " -out_dir=" + os.path.join(self.output_base_dir_, out_path)
+        os.system(format_log_cmd)
+        csv_data_name = json_config[0]
+        return os.path.join(self.output_base_dir_, out_path, csv_data_name)
+
+    def plotData(self, data_path, titles: List[str], labels: List[str], y_label: str,
+                 axis_log: bool = True, fig_name="tmp.png"):
+        mks = ["o", "v", "^", "<", "*", "x", "p", "s", "D", "P"]
+        lineType = ["-", "--", ":", "-."]
+        mknum = len(mks)
+        linenum = len(lineType)
+        df = pd.read_csv(data_path)
+        XAxis = df[titles[0]].to_numpy()
+        fig, ax1 = plt.subplots(figsize=(8, 4.96))
+        for i in range(1, len(titles)):
+            plt.grid()
+            data = df[titles[i]].to_numpy()
+            plot0 = ax1.plot(
+                XAxis, data, mks[i % mknum] + lineType[i // linenum],
+                markerfacecolor='none', label=labels[i], markersize=10, linewidth=2)
+        ax1.set_xlabel(labels[0], fontsize=16)
+        ax1.set_ylabel(y_label, fontsize=16)
+        if axis_log:
+            ax1.set_xscale("log", base=2)
+        plt.grid()
+        ax1.legend()
+        foo_fig = plt.gcf()  # 'get current figure'
+        foo_fig.savefig(fig_name,
+                        bbox_inches='tight', format='png', dpi=1000, pad_inches=0.0)
+
+
+class ExpConfig:
+    def __init__(self, args=None, note=None, json_config=None, out_dir=None,
+                 plot_y_labels=None, data_lists: list[list[str]] = None,
+                 plot_labels: list[list[str]] = None, fig_name: list[list[str]] = None) -> None:
+        self.args_ = args
+        self.note_ = note
+        self.json_config_ = json_config
+        self.data_lists_ = data_lists
+        self.plot_labels_ = plot_labels
+        self.fig_name_ = fig_name
+        self.out_dir_ = out_dir
+        self.y_labels_ = plot_y_labels
+
+
+exps = {
+    "prefetch": ExpConfig(args=["-test", "1"],
+                          note="prefetch",
+                          json_config=["microbench_prefetching.csv",
+                                       "wss",    ["granularity"]],
+                          out_dir="micro_bench",
+                          data_lists=[
+                              ["wss", " 256 imc read ratio", " 256 pm read ratio"]],
+                          plot_labels=[
+                              ["wss", "rd_ratio_imc_256", "rd_ratio_pm_256"]],
+                          fig_name=["prefetch.png"]),
+    "prefetch_optimize": ExpConfig(
+        args=["-test", "8"],
+        note="prefetch_optimize",
+        json_config=["prefetch_optimize.csv",
+                     "wss",    ["type"]],
+        out_dir="case_study",
+        data_lists=[
+            ["wss",
+             " normal load latency",
+             " nt cpy then load latency"],
+            ["wss",
+             " normal load imc read ratio",
+             " normal load pm read ratio",
+             " nt cpy then load imc read ratio",
+             " nt cpy then load pm read ratio"
+             ]
+        ],
+        plot_labels=[
+            ["wss",
+             "original latency",
+             "optimized latency"],
+            ["wss",
+             "original imc read ratio",
+             "original pm read ratio",
+             "optimized imc read ratio",
+             "optimized pm read ratio"
+             ]
+        ],
+        plot_y_labels=["CPU cycles", "read ratio"],
+
+        fig_name=["prefetch_optimize_read_latency.png",
+                  "prefetch_optimize_read_size.png"]
+    ),
+    "rap": ExpConfig(
+        args=["-test", "5"],
+        note="read_after_persist",
+        json_config=["rap.csv",
+                     "distance",    ["method", "on dram", "remote"]]
+    ),
+    "rd_throughput_prefetch": ExpConfig(
+        args=["-test", "9"],
+        note="read_throuput_against_prefetch",
+        json_config=["read_throuput_against_prefetch.csv",
+                     "thread num",    ["type"]],
+        out_dir="case_study",
+        data_lists=[
+            ["thread num",
+             " normal load pm throughput",
+             " normal load perceived throughput",
+             " nt cpy then load pm throughput",
+             " nt cpy then load perceived throughput",
+             ],
+            ["thread num",
+             " normal load latency",
+             " nt cpy then load latency",
+             ]
+        ],
+        plot_labels=[
+            ["thread num",
+             "normal pm throughput",
+             "normal perceived throughput",
+             "optimized pm throughput",
+             "optimized perceived throughput",
+             ],
+            ["thread num",
+             "normal latency",
+             "optimized latency",
+             ]
+        ],
+        plot_y_labels=["MB/s", "CPU cycles"],
+        fig_name=["prefetch_multithread_rd_throughput.png",
+                  "prefetch_multithread_rd_lat.png"]
+    )
+}
+
+
+def general_task_runner(config: ExpConfig):
+
+    runner = ExpRunner("tmp", 0)
+
+    log_name = runner.run_exp("build_benchmark/bin/microbench",
+                            config.args_, config.note_)
+    # log_name = "prefetch_optimize.2022-03-11-14:47:02.log "
+    formatted_log_name = runner.format_log(
+        log_name, config.json_config_, config.out_dir_)
+
+    size = len(config.plot_labels_)
+    for i in range(size):
+        runner.plotData(data_path=formatted_log_name,
+                        titles=config.data_lists_[i],
+                        labels=config.plot_labels_[i],
+                        axis_log=True,
+                        y_label=config.y_labels_[i],
+                        fig_name=os.path.join(runner.output_base_dir_,
+                                              config.out_dir_, config.fig_name_[i])
+                        )
+
+
+# compile code for case study, download YCSB and generate workload files
 def prepare_case_study():
     src_dir = os.path.join(this_file_dir, "case_study")
     build_dir = os.path.join(this_file_dir, "build_cases")
@@ -18,37 +223,46 @@ def prepare_case_study():
     os.system(build_cmd)
 
     if not os.path.exists(os.path.join(tmp_dir, "ycsb-0.17.0.tar.gz")):
-        ycsb_download_cmd = "cd "+ tmp_dir +" && wget https://github.com/brianfrankcooper/YCSB/releases/download/0.17.0/ycsb-0.17.0.tar.gz"
+        ycsb_download_cmd = "cd " + tmp_dir + \
+            " && wget https://github.com/brianfrankcooper/YCSB/releases/download/0.17.0/ycsb-0.17.0.tar.gz"
         os.system(ycsb_download_cmd)
     if not os.path.exists(os.path.join(tmp_dir, "ycsb-0.17.0")):
-        os.system("cd "+ tmp_dir +" && tar -xvf " + os.path.join(tmp_dir, "ycsb-0.17.0.tar.gz"))
+        os.system("cd " + tmp_dir + " && tar -xvf " +
+                  os.path.join(tmp_dir, "ycsb-0.17.0.tar.gz"))
 
-    prepare_workload_cmd = python_path + " " + os.path.join(this_file_dir, "tools", "generate_workload.py") + " -op_num=12000000"
+    prepare_workload_cmd = python_path + " " + \
+        os.path.join(this_file_dir, "tools",
+                     "generate_workload.py") + " -op_num=12000000"
     print(prepare_workload_cmd)
     os.system(prepare_workload_cmd)
+
+# run FAST&FAIR, CCEH
+
 
 def run_case_study(max_worker, pmem_directory):
     build_dir = os.path.join(this_file_dir, "build_cases")
     # fastfair test
+
     def fast_fair_test():
         for i in ["fastfair_original_test", "fastfair_rap_mod_test"]:
             init_command = "echo >" + os.path.join(tmp_dir,  i + ".log")
             os.system(init_command)
             for j in range(1, max_worker + 1):
-                run_cmd = "numactl -N 0 " +os.path.join(build_dir, i) + " -thread " + str(j) + " >> " + os.path.join(tmp_dir,  i + ".log")
+                run_cmd = "numactl -N 0 " + os.path.join(build_dir, i) + " -thread " + str(
+                    j) + " >> " + os.path.join(tmp_dir,  i + ".log")
                 os.system(run_cmd)
     fast_fair_test()
-    
 
     # cceh test
-    def cceh_test(on_pm:bool = True):
+    def cceh_test(on_pm: bool = True):
         if on_pm:
             pmem_dir = pmem_directory
             media_type = "pmm"
         else:
             pmem_dir = "/dev/shm/"
             media_type = "dram"
-        init_command = "echo >" + os.path.join(tmp_dir,  "cceh_" + media_type + ".log")
+        init_command = "echo >" + \
+            os.path.join(tmp_dir,  "cceh_" + media_type + ".log")
         os.system(init_command)
         for i in range(1, max_worker + 1):
             run_cmd = "numactl -N 0 " + os.path.join(build_dir, "cceh_test") + " -pool_dir " + pmem_dir \
@@ -68,8 +282,11 @@ def run_case_study(max_worker, pmem_directory):
                                                "cceh_preread_" + media_type + ".log")
             os.system(run_cmd)
             os.remove(os.path.join(os.path.abspath(pmem_dir), "cceh_pmempool"))
-    # cceh_test(True)
-    # cceh_test(False)
+    cceh_test(True)
+    cceh_test(False)
+
+# compile code for microbenchmarks
+
 
 def prepare_microbench():
     src_dir = os.path.join(this_file_dir, "micro_benchmarks")
@@ -79,45 +296,60 @@ def prepare_microbench():
     build_cmd = "cd " + build_dir + " && cmake " + src_dir + " && make -j"
     os.system(build_cmd)
 
+
 def run_microbench_except_prefetching():
     build_dir = os.path.join(this_file_dir, "build_benchmark", "bin")
-
+    # read buffer amplification test
     init_command = "echo >" + os.path.join(tmp_dir,  "task0.log")
     os.system(init_command)
-    rd_amp_run_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 0 >> " + os.path.join(tmp_dir,  "task0.log")
+    rd_amp_run_cmd = "numactl -N 0 " + \
+        os.path.join(build_dir, "microbench") + " -test 0 >> " + \
+        os.path.join(tmp_dir,  "task0.log")
     os.system(rd_amp_run_cmd)
-
+    # write buffer test
     init_command = "echo >" + os.path.join(tmp_dir,  "task2.log")
     os.system(init_command)
-    wr_buf_run_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 2 >> " + os.path.join(tmp_dir,  "task2.log")
+    wr_buf_run_cmd = "numactl -N 0 " + \
+        os.path.join(build_dir, "microbench") + " -test 2 >> " + \
+        os.path.join(tmp_dir,  "task2.log")
     os.system(wr_buf_run_cmd)
-
+    # test the seperate read and write buffer
     init_command = "echo >" + os.path.join(tmp_dir,  "task4.log")
     os.system(init_command)
-    seperate_rd_wr_buf_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 4 >> " + os.path.join(tmp_dir,  "task4.log")
+    seperate_rd_wr_buf_cmd = "numactl -N 0 " + \
+        os.path.join(build_dir, "microbench") + " -test 4 >> " + \
+        os.path.join(tmp_dir,  "task4.log")
     os.system(seperate_rd_wr_buf_cmd)
-
+    # test the read after persist behavior, pm version
     init_command = "echo >" + os.path.join(tmp_dir,  "task5.log")
     os.system(init_command)
-    rap_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 5 >> " + os.path.join(tmp_dir,  "task5.log")
+    rap_cmd = "numactl -N 0 " + \
+        os.path.join(build_dir, "microbench") + " -test 5 >> " + \
+        os.path.join(tmp_dir,  "task5.log")
     os.system(rap_cmd)
-
+    # read after persist, dram version
     init_command = "echo >" + os.path.join(tmp_dir,  "task5_dram.log")
     os.system(init_command)
-    rap_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -nopmm -test 5 >> " + os.path.join(tmp_dir,  "task5_dram.log")
+    rap_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + \
+        " -nopmm -test 5 >> " + os.path.join(tmp_dir,  "task5_dram.log")
     os.system(rap_cmd)
-
+    # test latency on persistent memory
     init_command = "echo >" + os.path.join(tmp_dir,  "task6.log")
     os.system(init_command)
-    access_lat_cmd = "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 6 >> " + os.path.join(tmp_dir,  "task6.log")
+    access_lat_cmd = "numactl -N 0 " + \
+        os.path.join(build_dir, "microbench") + " -test 6 >> " + \
+        os.path.join(tmp_dir,  "task6.log")
     print(access_lat_cmd)
     os.system(access_lat_cmd)
+
 
 def run_microbench_prefetching():
     build_dir = os.path.join(this_file_dir, "build_benchmark", "bin")
     init_command = "echo >" + os.path.join(tmp_dir,  "task1.log")
     os.system(init_command)
-    prefetching_cmd =  "numactl -N 0 " + os.path.join(build_dir, "microbench") + " -test 1 >> " + os.path.join(tmp_dir,  "task1.log")
+    prefetching_cmd = "numactl -N 0 " + \
+        os.path.join(build_dir, "microbench") + " -test 1 >> " + \
+        os.path.join(tmp_dir,  "task1.log")
     os.system(prefetching_cmd)
 
 
@@ -169,12 +401,12 @@ def format_logs():
               " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config0.json") +
               " -tmp_dir=" + tmp_dir +
               " -out_dir=" + micro_bench_dir)
-    
+
     os.system(python_path + " " + tool_path +
-            " -log_path=" + os.path.join(tmp_dir, "task1.log") +
-            " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config1.json") +
-            " -tmp_dir=" + tmp_dir +
-            " -out_dir=" + micro_bench_dir)
+              " -log_path=" + os.path.join(tmp_dir, "task1.log") +
+              " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config1.json") +
+              " -tmp_dir=" + tmp_dir +
+              " -out_dir=" + micro_bench_dir)
 
     os.system(python_path + " " + tool_path +
               " -log_path=" + os.path.join(tmp_dir, "task2.log") +
@@ -193,19 +425,21 @@ def format_logs():
               " -log_path=" + os.path.join(tmp_dir, "task5_dram.log") +
               " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config5_1.json") +
               " -tmp_dir=" + tmp_dir +
-              " -out_dir=" + micro_bench_dir)              
+              " -out_dir=" + micro_bench_dir)
     os.system(python_path + " " + tool_path +
               " -log_path=" + os.path.join(tmp_dir, "task6.log") +
               " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config6.json") +
               " -tmp_dir=" + tmp_dir +
               " -out_dir=" + micro_bench_dir)
 
+
 def plot_results():
     # plot microbench
     def run_plot_script(file_name):
         tool_path = os.path.join(this_file_dir, "tools", file_name)
         os.system(python_path + " " + tool_path)
-    shutil.copy(os.path.join(tmp_dir, "task2.log"), os.path.join(this_file_dir, "output", "micro_bench", "seperate_rd_wr_buf.log"))
+    shutil.copy(os.path.join(tmp_dir, "task2.log"), os.path.join(
+        this_file_dir, "output", "micro_bench", "seperate_rd_wr_buf.log"))
     run_plot_script("plot_bench_lat.py")
     run_plot_script("plot_bench_prefetching.py")
     run_plot_script("plot_bench_rd_amp.py")
@@ -218,7 +452,9 @@ def plot_results():
 # run_microbench_except_prefetching()
 # run_microbench_prefetching()
 # prepare_case_study()
-run_case_study(8, "/mnt/pmem/")
-format_logs()
-plot_results()
+# run_case_study(8, "/mnt/pmem/")
+# format_logs()
+# plot_results()
 
+
+general_task_runner(exps["prefetch_optimize"])

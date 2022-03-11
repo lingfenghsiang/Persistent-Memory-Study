@@ -212,10 +212,13 @@ void extreme_case_prefetching(void *addr, uint64_t max_size)
             }
         }
         std::cout << "-------result--------" << std::endl;
+        auto idea_rd = 1.0 * unit_num / (1ULL << 20) * iterations * sizeof(struct working_unit_t);
         std::cout << "[wss]:[" << unit_num * sizeof(struct working_unit_t) << "](B)" << std::endl;
-        std::cout << "[ideal read]:[" << 1.0 * unit_num / (1ULL << 20) * iterations * sizeof(struct working_unit_t)  << "](MB)" << std::endl;
+        std::cout << "[ideal read]:[" << idea_rd << "](MB)" << std::endl;
         std::cout << "[imc read]:[" << target_dimm->imc_read << "](MB)" << std::endl;
         std::cout << "[pm read]:[" << target_dimm->media_rd << "](MB)" << std::endl;
+        std::cout << "[imc read ratio]:[" << target_dimm->media_rd / idea_rd << "]" << std::endl;
+        std::cout << "[pm read ratio]:[" << target_dimm->media_rd / idea_rd << "]" << std::endl;
         std::cout << "[latency]:[" << latency / unit_num / iterations << "](CPU cycles)" << std::endl;
         if (with_prefetch)
         {
@@ -429,7 +432,7 @@ void rd_throughput_against_prefetching(void *addr, uint64_t max_size)
             std::cout << "[type]:[nt cpy then load]" << std::endl;
         }
         std::cout << "[pm throughput]:[" << target_dimm->media_rd / elapsed_time.count() << "](GB/s)" << std::endl;
-        std::cout << "[thread num]:[" << thread_num <<"]" <<std::endl;
+        std::cout << "[thread num]:[" << thread_num << "]" << std::endl;
         std::cout << "[perceived throughput]:[" << 1.0 * per_thread_unit_num * thread_num * sizeof(struct working_unit_t) / (1ULL << 20) * iterations / elapsed_time.count() << "](GB/s)" << std::endl;
         std::cout << "---------------------" << std::endl;
     };
