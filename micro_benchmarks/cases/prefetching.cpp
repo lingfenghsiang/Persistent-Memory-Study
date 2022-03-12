@@ -217,7 +217,7 @@ void extreme_case_prefetching(void *addr, uint64_t max_size)
         std::cout << "[ideal read]:[" << idea_rd << "](MB)" << std::endl;
         std::cout << "[imc read]:[" << target_dimm->imc_read << "](MB)" << std::endl;
         std::cout << "[pm read]:[" << target_dimm->media_rd << "](MB)" << std::endl;
-        std::cout << "[imc read ratio]:[" << target_dimm->media_rd / idea_rd << "]" << std::endl;
+        std::cout << "[imc read ratio]:[" << target_dimm->imc_read / idea_rd << "]" << std::endl;
         std::cout << "[pm read ratio]:[" << target_dimm->media_rd / idea_rd << "]" << std::endl;
         std::cout << "[latency]:[" << latency / unit_num / iterations << "](CPU cycles)" << std::endl;
         if (with_prefetch)

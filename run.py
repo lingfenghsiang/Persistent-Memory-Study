@@ -1,10 +1,12 @@
 import os
 import shutil
+from sqlite3 import Timestamp
 import pandas as pd
 import matplotlib.pyplot as plt
 from typing import List
 from datetime import datetime
 import json
+import copy
 
 
 this_file_dir = os.path.abspath(os.path.dirname(__file__))
@@ -65,7 +67,7 @@ class ExpRunner():
         return os.path.join(self.output_base_dir_, out_path, csv_data_name)
 
     def plotData(self, data_path, titles: List[str], labels: List[str], y_label: str,
-                 axis_log: bool = True, fig_name="tmp.png"):
+                 plot_every = 1, axis_log: bool = True, fig_name="tmp.png"):
         mks = ["o", "v", "^", "<", "*", "x", "p", "s", "D", "P"]
         lineType = ["-", "--", ":", "-."]
         mknum = len(mks)
@@ -78,7 +80,7 @@ class ExpRunner():
             data = df[titles[i]].to_numpy()
             plot0 = ax1.plot(
                 XAxis, data, mks[i % mknum] + lineType[i // linenum],
-                markerfacecolor='none', label=labels[i], markersize=10, linewidth=2)
+                markerfacecolor='none',markevery=plot_every, label=labels[i], markersize=10, linewidth=2)
         ax1.set_xlabel(labels[0], fontsize=16)
         ax1.set_ylabel(y_label, fontsize=16)
         if axis_log:
@@ -92,7 +94,8 @@ class ExpRunner():
 
 class ExpConfig:
     def __init__(self, args=None, note=None, json_config=None, out_dir=None,
-                 plot_y_labels=None, data_lists: list[list[str]] = None,
+                 plot_y_labels=None, x_log = False, plot_every:int = 1, 
+                 data_lists: list[list[str]] = None, attach_timestamp: bool = False,
                  plot_labels: list[list[str]] = None, fig_name: list[list[str]] = None) -> None:
         self.args_ = args
         self.note_ = note
@@ -102,6 +105,9 @@ class ExpConfig:
         self.fig_name_ = fig_name
         self.out_dir_ = out_dir
         self.y_labels_ = plot_y_labels
+        self.x_log_ = x_log
+        self.plot_every_ = plot_every
+        self.output_attach_timestamp_ = attach_timestamp
 
 
 exps = {
@@ -110,10 +116,13 @@ exps = {
                           json_config=["microbench_prefetching.csv",
                                        "wss",    ["granularity"]],
                           out_dir="micro_bench",
+                          x_log=True,
                           data_lists=[
                               ["wss", " 256 imc read ratio", " 256 pm read ratio"]],
                           plot_labels=[
                               ["wss", "rd_ratio_imc_256", "rd_ratio_pm_256"]],
+                          plot_y_labels=["read ratio", ],
+                          attach_timestamp = True,
                           fig_name=["prefetch.png"]),
     "prefetch_optimize": ExpConfig(
         args=["-test", "8"],
@@ -123,9 +132,6 @@ exps = {
         out_dir="case_study",
         data_lists=[
             ["wss",
-             " normal load latency",
-             " nt cpy then load latency"],
-            ["wss",
              " normal load imc read ratio",
              " normal load pm read ratio",
              " nt cpy then load imc read ratio",
@@ -134,9 +140,6 @@ exps = {
         ],
         plot_labels=[
             ["wss",
-             "original latency",
-             "optimized latency"],
-            ["wss",
              "original imc read ratio",
              "original pm read ratio",
              "optimized imc read ratio",
@@ -144,15 +147,66 @@ exps = {
              ]
         ],
         plot_y_labels=["CPU cycles", "read ratio"],
-
-        fig_name=["prefetch_optimize_read_latency.png",
-                  "prefetch_optimize_read_size.png"]
+        x_log=True,
+        fig_name=[
+            "prefetch_optimize_read_size.png"]
     ),
     "rap": ExpConfig(
         args=["-test", "5"],
         note="read_after_persist",
         json_config=["rap.csv",
-                     "distance",    ["method", "on dram", "remote"]]
+                     "distance",    ["method", "on dram", "remote"]],
+        out_dir="micro_bench",
+        data_lists=[
+            ["distance",
+             " wr_clwb_mfence 0 0 RAP lat",
+             " wr_clwb_sfence 0 0 RAP lat",
+             " wr_nt_sfence 0 0 RAP lat",
+             ],
+            ["distance",
+             " wr_clwb_mfence 1 0 RAP lat",
+             " wr_clwb_sfence 1 0 RAP lat",
+             ],
+            ["distance",
+             " wr_clwb_mfence 0 1 RAP lat",
+             " wr_clwb_sfence 0 1 RAP lat",
+             " wr_nt_sfence 0 1 RAP lat",
+             ],
+            ["distance",
+             " wr_clwb_mfence 1 1 RAP lat",
+             " wr_clwb_sfence 1 1 RAP lat",
+             ],
+        ],
+        plot_labels=[
+            ["distance",
+             "PM+clwb+mfence",
+             "PM+clwb+sfence",
+             "PM+nt-store+mfence"
+             ],
+            [
+                "distance",
+                "DRAM+clwb+mfence",
+                "DRAM+clwb+sfence"
+            ],
+            ["distance",
+             "PM+clwb+mfence",
+             "PM+clwb+sfence",
+             "PM+nt-store+mfence"
+             ],
+            [
+                "distance",
+                "DRAM+clwb+mfence",
+                "DRAM+clwb+sfence"
+            ]
+        ],
+        plot_every= 4,
+        plot_y_labels=["CPU cycles", "CPU cycles", "CPU cycles", "CPU cycles",],
+        fig_name=[
+            "read_after_flush_pm_local.png",
+            "read_after_flush_dram_local.png",
+            "read_after_flush_pm_remote.png",
+            "read_after_flush_dram_remote.png",
+            ]      
     ),
     "rd_throughput_prefetch": ExpConfig(
         args=["-test", "9"],
@@ -162,9 +216,7 @@ exps = {
         out_dir="case_study",
         data_lists=[
             ["thread num",
-             " normal load pm throughput",
              " normal load perceived throughput",
-             " nt cpy then load pm throughput",
              " nt cpy then load perceived throughput",
              ],
             ["thread num",
@@ -174,9 +226,7 @@ exps = {
         ],
         plot_labels=[
             ["thread num",
-             "normal pm throughput",
              "normal perceived throughput",
-             "optimized pm throughput",
              "optimized perceived throughput",
              ],
             ["thread num",
@@ -194,10 +244,17 @@ exps = {
 def general_task_runner(config: ExpConfig):
 
     runner = ExpRunner("tmp", 0)
+    now = datetime.now()
+    time_stamp = time_stamp = now.strftime("%Y-%m-%d-%H:%M:%S")
+    config = copy.deepcopy(config)
+    if config.output_attach_timestamp_:
+        config.json_config_[0] = config.json_config_[0][:-4] + '.' + time_stamp + config.json_config_[0][-4:]
+        for i in range(len(config.fig_name_)):
+            config.fig_name_[i] = config.fig_name_[i][:-4] + '.' + time_stamp + config.fig_name_[i][-4:]
 
     log_name = runner.run_exp("build_benchmark/bin/microbench",
                             config.args_, config.note_)
-    # log_name = "prefetch_optimize.2022-03-11-14:47:02.log "
+
     formatted_log_name = runner.format_log(
         log_name, config.json_config_, config.out_dir_)
 
@@ -206,12 +263,24 @@ def general_task_runner(config: ExpConfig):
         runner.plotData(data_path=formatted_log_name,
                         titles=config.data_lists_[i],
                         labels=config.plot_labels_[i],
-                        axis_log=True,
+                        axis_log=config.x_log_,
+                        plot_every= config.plot_every_,
                         y_label=config.y_labels_[i],
                         fig_name=os.path.join(runner.output_base_dir_,
                                               config.out_dir_, config.fig_name_[i])
                         )
 
+
+def prepare_output_dir():
+    output_dir = os.path.join(this_file_dir, "output")
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+    case_study_dir = os.path.join(output_dir, "case_study")
+    if not os.path.isdir(case_study_dir):
+        os.makedirs(case_study_dir)
+    micro_bench_dir = os.path.join(output_dir, "micro_bench")
+    if not os.path.isdir(micro_bench_dir):
+        os.makedirs(micro_bench_dir)
 
 # compile code for case study, download YCSB and generate workload files
 def prepare_case_study():
@@ -285,6 +354,9 @@ def run_case_study(max_worker, pmem_directory):
     cceh_test(True)
     cceh_test(False)
 
+    general_task_runner(exps["prefetch_optimize"])
+    general_task_runner(exps["rd_throughput_prefetch"])
+
 # compile code for microbenchmarks
 
 
@@ -295,7 +367,6 @@ def prepare_microbench():
         os.makedirs(build_dir)
     build_cmd = "cd " + build_dir + " && cmake " + src_dir + " && make -j"
     os.system(build_cmd)
-
 
 def run_microbench_except_prefetching():
     build_dir = os.path.join(this_file_dir, "build_benchmark", "bin")
@@ -321,12 +392,8 @@ def run_microbench_except_prefetching():
         os.path.join(tmp_dir,  "task4.log")
     os.system(seperate_rd_wr_buf_cmd)
     # test the read after persist behavior, pm version
-    init_command = "echo >" + os.path.join(tmp_dir,  "task5.log")
-    os.system(init_command)
-    rap_cmd = "numactl -N 0 " + \
-        os.path.join(build_dir, "microbench") + " -test 5 >> " + \
-        os.path.join(tmp_dir,  "task5.log")
-    os.system(rap_cmd)
+    general_task_runner(exps["rap"])
+    
     # read after persist, dram version
     init_command = "echo >" + os.path.join(tmp_dir,  "task5_dram.log")
     os.system(init_command)
@@ -344,13 +411,7 @@ def run_microbench_except_prefetching():
 
 
 def run_microbench_prefetching():
-    build_dir = os.path.join(this_file_dir, "build_benchmark", "bin")
-    init_command = "echo >" + os.path.join(tmp_dir,  "task1.log")
-    os.system(init_command)
-    prefetching_cmd = "numactl -N 0 " + \
-        os.path.join(build_dir, "microbench") + " -test 1 >> " + \
-        os.path.join(tmp_dir,  "task1.log")
-    os.system(prefetching_cmd)
+    general_task_runner(exps["prefetch"])
 
 
 def format_logs():
@@ -402,11 +463,6 @@ def format_logs():
               " -tmp_dir=" + tmp_dir +
               " -out_dir=" + micro_bench_dir)
 
-    os.system(python_path + " " + tool_path +
-              " -log_path=" + os.path.join(tmp_dir, "task1.log") +
-              " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config1.json") +
-              " -tmp_dir=" + tmp_dir +
-              " -out_dir=" + micro_bench_dir)
 
     os.system(python_path + " " + tool_path +
               " -log_path=" + os.path.join(tmp_dir, "task2.log") +
@@ -416,16 +472,6 @@ def format_logs():
 
     # task4 to test seperate buffer does not need a graph
 
-    os.system(python_path + " " + tool_path +
-              " -log_path=" + os.path.join(tmp_dir, "task5.log") +
-              " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config5_0.json") +
-              " -tmp_dir=" + tmp_dir +
-              " -out_dir=" + micro_bench_dir)
-    os.system(python_path + " " + tool_path +
-              " -log_path=" + os.path.join(tmp_dir, "task5_dram.log") +
-              " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config5_1.json") +
-              " -tmp_dir=" + tmp_dir +
-              " -out_dir=" + micro_bench_dir)
     os.system(python_path + " " + tool_path +
               " -log_path=" + os.path.join(tmp_dir, "task6.log") +
               " -config_path=" + os.path.join(this_file_dir, "tools", "microbench_config6.json") +
@@ -441,20 +487,18 @@ def plot_results():
     shutil.copy(os.path.join(tmp_dir, "task2.log"), os.path.join(
         this_file_dir, "output", "micro_bench", "seperate_rd_wr_buf.log"))
     run_plot_script("plot_bench_lat.py")
-    run_plot_script("plot_bench_prefetching.py")
+    # run_plot_script("plot_bench_prefetching.py")
     run_plot_script("plot_bench_rd_amp.py")
-    run_plot_script("plot_bench_read_after_persist.py")
+
     run_plot_script("plot_bench_wr_buf.py")
     run_plot_script("plot_case_btree.py")
     run_plot_script("plot_case_cceh.py")
 
-# prepare_microbench()
-# run_microbench_except_prefetching()
-# run_microbench_prefetching()
-# prepare_case_study()
-# run_case_study(8, "/mnt/pmem/")
-# format_logs()
-# plot_results()
-
-
-general_task_runner(exps["prefetch_optimize"])
+prepare_output_dir()
+prepare_microbench()
+run_microbench_except_prefetching()
+run_microbench_prefetching()
+prepare_case_study()
+run_case_study(8, "/mnt/pmem/")
+format_logs()
+plot_results()

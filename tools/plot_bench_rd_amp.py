@@ -19,7 +19,6 @@ line1= df[" 2 line RA"].to_numpy()
 line2= df[" 3 line RA"].to_numpy()
 line3= df[" 4 line RA"].to_numpy()
 
-print(line0)
 
 fig, ax1 = plt.subplots(figsize = (8,4.96))
 plt.grid()

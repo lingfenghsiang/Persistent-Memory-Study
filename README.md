@@ -146,15 +146,16 @@ You should run the command as root user, bacause getting the DIMM information re
 When the execution is over, data and graphs will be generated in folder [output](output).
 
 ### Reproduce results from the paper
-Simply run the script is not enough. Some tests needs the machine to be reconfigured. These important steps are [run.py:217](run.py#L217) to [run.py:223](run.py#L223), as enclosed below:
+Simply run the script is not enough. Some tests needs the machine to be reconfigured. These important steps are [run.py:498](run.py#L498) to [run.py:505](run.py#L505), as enclosed below:
 ```
-217 prepare_microbench()                  #step 1
-218 run_microbench_except_prefetching()   #step 1
-219 run_microbench_prefetching()          #step 2
-220 prepare_case_study()                  #step 3
-221 run_case_study(6, "/mnt/pmem/")       #step 3
-222 format_logs()                         #step 4
-223 plot_results()                        #step 4
+498 prepare_output_dir()                  #step 1
+499 prepare_microbench()                  #step 1
+500 run_microbench_except_prefetching()   #step 1
+501 run_microbench_prefetching()          #step 2
+502 prepare_case_study()                  #step 3
+503 run_case_study(6, "/mnt/pmem/")       #step 3
+504 format_logs()                         #step 4
+505 plot_results()                        #step 4
 ```
 You need to follow the steps in correct order:
 > Step 1. 90 minutes and 16GB space on Intel Optane DC PMM.
@@ -164,7 +165,7 @@ You need to follow the steps in correct order:
 >
 >> Mount DCPMM device at directory "/mnt/pmem" in dax mode. [HOWTO](#how-do-i-mount-my-pm-device)
 >
->> Comment all steps except step 1 (line 217, 218)
+>> Comment all steps except step 1 (line 498-500)
 >
 >> Run "python3 run.py".
 
@@ -179,7 +180,7 @@ You need to follow the steps in correct order:
 >
 >> Mount DCPMM device at directory "/mnt/pmem" in dax mode. [HOWTO](#how-do-i-mount-my-pm-device)
 >
->> Comment all steps except step 2 (line 219)
+>> Comment all steps except step 2 (line 501)
 >
 >> Run "python3
 
@@ -193,27 +194,27 @@ working threads and the string arguement is the folder path of persistent memory
 >
 >> Mount DCPMM device at directory "/mnt/pmem" in dax mode. [HOWTO](#how-do-i-mount-my-pm-device)
 >
->> Comment all steps except step 3 (line 220, 221)
+>> Comment all steps except step 3 (line 502, 503)
 >
 >> Run "python3 run.py".
 
 
 > Step 4.
->> Comment all steps except step 4 (line 222, 223)
+>> Comment all steps except step 4 (line 504, 505)
 >
 >> Run "python3 run.py"
 
 
 
 ### Change working example size for case study
-To run on different size for case study, please change -op_num=12000000 at [run.py:26](run.py#L26) to the size you like.
+To run on different size for case study, please change -op_num=12000000 at [run.py:290](run.py#L290) to the size you like.
 ### Details
 For more details about micro-benchmarks (How to run, how is the code organized), please go to folder [micro_benchmarks](micro_benchmarks).
 
 For more details about micro-benchmarks (How to run, how is the code organized), please go to folder [case_study](case_study).
 
 ## Matching Paper Results
-Figure 2. Read amplification on a DIMM.
+### Figure 2. Read amplification on a DIMM.
 |  Figure info   | Contents  |
 |  ----  | ----  |
 | Raw log path  | `tmp/task0.log`  |
@@ -221,7 +222,7 @@ Figure 2. Read amplification on a DIMM.
 | Graph path  | `output/micro_bench/read_amp.png`  |
 | Plot script path  | `tools/plot_bench_rd_amp.py`  |
 
-Figure 3. On-DIMM prefetching
+### Figure 3. On-DIMM prefetching
 |  Figure info   | Contents  |
 |  ----  | ----  |
 | Raw log path  | `tmp/task1.log`  |
@@ -229,7 +230,7 @@ Figure 3. On-DIMM prefetching
 | Graph path  |  `output/micro_bench/prefetching.png` |
 | Plot script path  | `tools/plot_bench_prefetching.py` |
 
-Figure 4. Write amplification
+### Figure 4. Write amplification
 |  Figure info   | Contents  |
 |  ----  | ----  |
 | Raw log path  | `tmp/task2.log`  |
@@ -237,7 +238,9 @@ Figure 4. Write amplification
 | Graph path  |  `output/micro_bench/write_buf.png` |
 | Plot script path  | `tools/plot_bench_wr_buf.py` |
 
-Figure 5. Write buffer hit ratio. This generated figure only shows the write buffer hit ratio on current machine. To evaluate the difference between G1 and G2 Optane, figures across different machines need to be collected.
+### Figure 5. Write buffer hit ratio.
+
+This generated figure only shows the write buffer hit ratio on current machine. To evaluate the difference between G1 and G2 Optane, figures across different machines need to be collected.
 |  Figure info   | Contents  |
 |  ----  | ----  |
 | Raw log path  |  `tmp/task2.log`  |
@@ -245,7 +248,7 @@ Figure 5. Write buffer hit ratio. This generated figure only shows the write buf
 | Graph path  | `output/micro_bench/write_buf_hit_ratio.png`  |
 | Plot script path  | `tools/plot_bench_wr_buf.py` |
 
-Figure 7. Read after persist latency
+### Figure 7. Read after persist latency
 |  Figure info   | Contents  |
 |  ----  | ----  |
 | Raw log path  | `tmp/task5.log` and `tmp/task5_dram.log`    |
@@ -253,7 +256,7 @@ Figure 7. Read after persist latency
 | Graph path  |  `output/micro_bench/read_after_persist.png` |
 | Plot script path  | `tools/plot_bench_read_after_persist.py` |
 
-Figure 8. Latency of different write models long with read.
+### Figure 8. Latency of different write models long with read.
 |  Figure info   | Contents  |
 |  ----  | ----  |
 | Raw log path  | `tmp/task6.log`  |
@@ -261,7 +264,7 @@ Figure 8. Latency of different write models long with read.
 | Graph path  |  `output/micro_bench/lat.png` |
 | Plot script path  | `tools/plot_bench_lat.py` |
 
-Figure 10. CCEH case study
+### Figure 10. CCEH case study
 |  Figure info   | Contents  |
 |  ----  | ----  |
 | Raw log path  | `tmp/cceh_dram.log`, `tmp/cceh_pmm.log`, `tmp/cceh_preread_dram.log` and  `tmp/cceh_preread_pmm.log` |
@@ -269,7 +272,8 @@ Figure 10. CCEH case study
 | Graph path  | `output/case_study/cceh.png`  |
 | Plot script path  | `tools/plot_case_cceh.py`  |
 
-Figure 12. FAST & FAIR case study. This generated graph only shows the results on current machine. To compare the results on G1 and G2 Optane, graphs across different machines needs to be collected.
+### Figure 12. FAST & FAIR case study.
+This generated graph only shows the results on current machine. To compare the results on G1 and G2 Optane, graphs across different machines needs to be collected.
 |  Figure info   | Contents  |
 |  ----  | ----  |
 | Raw log path  | `tmp/fastfair_original_test.log` and `tmp/fastfair_rap_mod_test.log` |
@@ -277,6 +281,25 @@ Figure 12. FAST & FAIR case study. This generated graph only shows the results o
 | Graph path  |  `output/case_study/fastfair.png` |
 | Plot script path  | `tools/plot_case_btree.py` |
 
+
+### Figure 13. Reducing read caused by prefetching.
+This generated graph only shows the results on current machine. To compare the results on G1 and G2 Optane, graphs across different machines needs to be collected.
+|  Figure info   | Contents  |
+|  ----  | ----  |
+| Raw log path  | `tmp/prefetch_optimize.YYYY-MM-DD-HH:MM:SS.log` |
+| Formatted data path  |  `output/case_study/prefetch_optimize.csv`|
+| Graph path  |  `output/case_study/prefetch_optimize_read_size.png` |
+| Plot script path  | `tools/plot_case_btree.py` |
+
+
+### Figure 14. Multithread read performance regarding avoiding prefetching.
+This generated graph only shows the results on current machine. To compare the results on G1 and G2 Optane, graphs across different machines needs to be collected.
+|  Figure info   | Contents  |
+|  ----  | ----  |
+| Raw log path  | `tmp/read_throuput_against_prefetch.YYYY-MM-DD-HH:MM:SS.log`  |
+| Formatted data path  |  `output/case_study/read_throuput_against_prefetch.csv`|
+| Graph path  |  `output/case_study/prefetch_multithread_rd_lat.png` and `output/case_study/prefetch_multithread_rd_throughput.png` |
+| Plot script path  | `tools/plot_case_btree.py` |
 
 ## Notion
 When the machine boots up, there could be unintended read or write operation on the DIMMs. If you observe strange spikes on the graph, you could wait for some time and run the code again.
