@@ -121,7 +121,7 @@ The default pool path arguement for case study is "/mnt/pmem/", specified in fil
 
 #### Specify python path
 If your user name is `foo`, and your conda environment is installed at `/home/foo/anaconda3/bin/python`,
-you need to specify this in file [run.py:7](run.py#L7) at the beginning as
+you need to specify this in file [run.py:16](run.py#L16) at the beginning as
 ```
 python_path = "/home/foo/anaconda3/bin/python"
 ```
@@ -146,16 +146,16 @@ You should run the command as root user, bacause getting the DIMM information re
 When the execution is over, data and graphs will be generated in folder [output](output).
 
 ### Reproduce results from the paper
-Simply run the script is not enough. Some tests needs the machine to be reconfigured. These important steps are [run.py:498](run.py#L498) to [run.py:505](run.py#L505), as enclosed below:
+Simply run the script is not enough. Some tests needs the machine to be reconfigured. These important steps are [run.py:497](run.py#L497) to [run.py:504](run.py#L504), as enclosed below:
 ```
-498 prepare_output_dir()                  #step 1
-499 prepare_microbench()                  #step 1
-500 run_microbench_except_prefetching()   #step 1
-501 run_microbench_prefetching()          #step 2
-502 prepare_case_study()                  #step 3
-503 run_case_study(6, "/mnt/pmem/")       #step 3
-504 format_logs()                         #step 4
-505 plot_results()                        #step 4
+497 prepare_output_dir()                  #step 1
+498 prepare_microbench()                  #step 1
+499 run_microbench_except_prefetching()   #step 1
+500 run_microbench_prefetching()          #step 2
+501 prepare_case_study()                  #step 3
+502 run_case_study(6, "/mnt/pmem/")       #step 3
+503 format_logs()                         #step 4
+504 plot_results()                        #step 4
 ```
 You need to follow the steps in correct order:
 > Step 1. 90 minutes and 16GB space on Intel Optane DC PMM.
@@ -165,7 +165,7 @@ You need to follow the steps in correct order:
 >
 >> Mount DCPMM device at directory "/mnt/pmem" in dax mode. [HOWTO](#how-do-i-mount-my-pm-device)
 >
->> Comment all steps except step 1 (line 498-500)
+>> Comment all steps except step 1 (line 497-499)
 >
 >> Run "python3 run.py".
 
@@ -179,7 +179,7 @@ You need to follow the steps in correct order:
 >
 >> Mount DCPMM device at directory "/mnt/pmem" in dax mode. [HOWTO](#how-do-i-mount-my-pm-device)
 >
->> Comment all steps except step 2 (line 501)
+>> Comment all steps except step 2 (line 500)
 >
 >> Run "python3 run.py".
 >
@@ -195,20 +195,20 @@ working threads and the string arguement is the folder path of persistent memory
 >
 >> Mount DCPMM device at directory "/mnt/pmem" in dax mode. [HOWTO](#how-do-i-mount-my-pm-device)
 >
->> Comment all steps except step 3 (line 502, 503)
+>> Comment all steps except step 3 (line 501, 502)
 >
 >> Run "python3 run.py".
 
 
 > Step 4.
->> Comment all steps except step 4 (line 504, 505)
+>> Comment all steps except step 4 (line 503, 504)
 >
 >> Run "python3 run.py"
 
 
 
 ### Change working example size for case study
-To run on different size for case study, please change -op_num=12000000 at [run.py:290](run.py#L290) to the size you like.
+To run on different size for case study, please change -op_num=12000000 at [run.py:304](run.py#L304) to the size you like.
 ### Details
 For more details about micro-benchmarks (How to run, how is the code organized), please go to folder [micro_benchmarks](micro_benchmarks).
 
