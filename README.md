@@ -170,11 +170,10 @@ You need to follow the steps in correct order:
 >> Run "python3 run.py".
 
 
-> Step 2. 20 minutes and 16GB space on Intel Optane DC PMM.
+> Step 2. This step may test multiple prefetchers and each round takes 15 minutes and 16GB space on Intel Optane DC PMM. 
 >> Reboot the machine
 >
->> Turn off the CPU prefetching in BIOS, including hardware prefetching, adjacent cacheline prefetching and LLC (last level cache) prefetching
-(if available)
+>> Turn off the CPU prefetcher in BIOS (hardware prefetching/adjacent cacheline prefetching/DCU streamer prefetching)
 >
 >> Set CPU in performance mode. [HOWTO](#set-cpu-in-performance-mode)
 >
@@ -182,7 +181,9 @@ You need to follow the steps in correct order:
 >
 >> Comment all steps except step 2 (line 501)
 >
->> Run "python3
+>> Run "python3 run.py".
+>
+>> Repeat step 2 and test a different prefetcher.
 
 > Step 3. The integer argument in "run_case_study" is the max number of
 working threads and the string arguement is the folder path of persistent memory pool, which must end with "/". 40 minutes and 32GB space on DRAM and 16GB on Intel Optane DC PMM.
@@ -215,6 +216,9 @@ For more details about micro-benchmarks (How to run, how is the code organized),
 
 ## Matching Paper Results
 ### Figure 2. Read amplification on a DIMM.
+
+
+
 |  Figure info   | Contents  |
 |  ----  | ----  |
 | Raw log path  | `tmp/task0.log`  |
@@ -222,13 +226,26 @@ For more details about micro-benchmarks (How to run, how is the code organized),
 | Graph path  | `output/micro_bench/read_amp.png`  |
 | Plot script path  | `tools/plot_bench_rd_amp.py`  |
 
+The command to run a solitary test:
+```
+numactl -N 0 build_benchmark/microbench  -test 0 > name_of_the_log.log
+```
+
 ### Figure 3. On-DIMM prefetching
+Each time step 2 runs, a new formatted log and graph is generated.
+Since multiple prefetchers need to be tested and prefethcers reset in BIOS, file names are tagged with a timestamp. The format is "year-month-day-hour:minute:second".
+
 |  Figure info   | Contents  |
 |  ----  | ----  |
-| Raw log path  | `tmp/task1.log`  |
-| Formatted data path  | `output/micro_bench/microbench_trigger_prefetching.csv`  |
-| Graph path  |  `output/micro_bench/prefetching.png` |
-| Plot script path  | `tools/plot_bench_prefetching.py` |
+| Raw log path  | `tmp/prefetch.YYYY-MM-DD-HH:MM:SS.log`  |
+| Formatted data path  | `output/micro_bench/microbench_prefetching.YYYY-MM-DD-HH:MM:SS.csv`  |
+| Graph path  | `output/micro_bench/prefetch.YYYY-MM-DD-HH:MM:SS.png`  |
+| Plot script path  | function `general_task_runner()` in `run.py`  |
+
+The command to run a solitary test:
+```
+numactl -N 1 build_benchmark/microbench  -test 0 > name_of_the_log.log
+```
 
 ### Figure 4. Write amplification
 |  Figure info   | Contents  |
@@ -238,6 +255,10 @@ For more details about micro-benchmarks (How to run, how is the code organized),
 | Graph path  |  `output/micro_bench/write_buf.png` |
 | Plot script path  | `tools/plot_bench_wr_buf.py` |
 
+The command to run a solitary test:
+```
+numactl -N 2 build_benchmark/microbench  -test 0 > name_of_the_log.log
+```
 ### Figure 5. Write buffer hit ratio.
 
 This generated figure only shows the write buffer hit ratio on current machine. To evaluate the difference between G1 and G2 Optane, figures across different machines need to be collected.
@@ -248,13 +269,27 @@ This generated figure only shows the write buffer hit ratio on current machine. 
 | Graph path  | `output/micro_bench/write_buf_hit_ratio.png`  |
 | Plot script path  | `tools/plot_bench_wr_buf.py` |
 
+This test is executed in test for Figure 4.
+
 ### Figure 7. Read after persist latency
+The raw data log has a timestamp in the format of "year-month-day-hour:minute:second".
+
 |  Figure info   | Contents  |
 |  ----  | ----  |
-| Raw log path  | `tmp/task5.log` and `tmp/task5_dram.log`    |
-| Formatted data path  | `output/micro_bench/microbench_read_after_persist.csv` and `output/micro_bench/microbench_read_after_persist_dram.csv`  |
-| Graph path  |  `output/micro_bench/read_after_persist.png` |
-| Plot script path  | `tools/plot_bench_read_after_persist.py` |
+| Raw log path  | `tmp/read_after_persist.YYYY-MM-DD-HH:MM:SS.log`    |
+| Formatted data path  | `output/micro_bench/rap.csv`   |
+| Graph path  | `output/micro_bench/read_after_flush_dram_local.png`, `output/micro_bench/read_after_flush_dram_remote.png`, `output/micro_bench/read_after_flush_pm_local.png` and `output/micro_bench/read_after_flush_pm_remote.png` |
+| Plot script path  | function `general_task_runner()` in `run.py` |
+
+The command to run a solitary test:
+On PM
+```
+numactl -N 0 build_benchmark/microbench  -test 5 > name_of_the_log.log
+```
+On DRAM
+```
+numactl -N 0 build_benchmark/microbench  -nopmm -test 5 > name_of_the_log.log
+```
 
 ### Figure 8. Latency of different write models long with read.
 |  Figure info   | Contents  |
@@ -264,6 +299,11 @@ This generated figure only shows the write buffer hit ratio on current machine. 
 | Graph path  |  `output/micro_bench/lat.png` |
 | Plot script path  | `tools/plot_bench_lat.py` |
 
+The command to run a solitary test:
+ ```
+ numactl -N 0 build_benchmark/microbench  -test 6 > name_of_the_log.log
+ ```
+
 ### Figure 10. CCEH case study
 |  Figure info   | Contents  |
 |  ----  | ----  |
@@ -272,6 +312,16 @@ This generated figure only shows the write buffer hit ratio on current machine. 
 | Graph path  | `output/case_study/cceh.png`  |
 | Plot script path  | `tools/plot_case_cceh.py`  |
 
+The command to run a solitary test:
+
+No prefetch thread: thread_num is the number of threads
+```
+ numactl -N 0 build_cases/cceh_test -pool_dir /mnt/pmem -thread thread_num > name_of_the_log.log 
+```
+With prefetch thread: thread_num is the number of working threads, if thread_num is 10, then 10 prefetch thread and 10 working threads
+```
+numactl -N 0 build_cases/cceh_test -pool_dir /mnt/pmem  -preread  -thread thread_num > name_of_the_log.log
+```
 ### Figure 12. FAST & FAIR case study.
 This generated graph only shows the results on current machine. To compare the results on G1 and G2 Optane, graphs across different machines needs to be collected.
 |  Figure info   | Contents  |
@@ -281,26 +331,43 @@ This generated graph only shows the results on current machine. To compare the r
 | Graph path  |  `output/case_study/fastfair.png` |
 | Plot script path  | `tools/plot_case_btree.py` |
 
+The command to run a solitary test::
+
+Original version:
+```
+numactl -N 0 build_cases/fastfair_original_test  -thread thread_num > name_of_the_log.log
+```
+Optimized version:
+```
+numactl -N 0 build_cases/fastfair_rap_mod_test  -thread thread_num > name_of_the_log.log
+```
 
 ### Figure 13. Reducing read caused by prefetching.
-This generated graph only shows the results on current machine. To compare the results on G1 and G2 Optane, graphs across different machines needs to be collected.
+This generated graph only shows the results on current machine. To compare the results on G1 and G2 Optane, graphs across different machines needs to be collected. Files are tagged with a timestamp in the format of "year-month-day-hour:minute:second".
 |  Figure info   | Contents  |
 |  ----  | ----  |
 | Raw log path  | `tmp/prefetch_optimize.YYYY-MM-DD-HH:MM:SS.log` |
 | Formatted data path  |  `output/case_study/prefetch_optimize.csv`|
 | Graph path  |  `output/case_study/prefetch_optimize_read_size.png` |
-| Plot script path  | `tools/plot_case_btree.py` |
+| Plot script path  | function `general_task_runner()` in `run.py`  |
 
-
+The command to run a solitary test::
+ ```
+ numactl -N 0 build_benchmark/microbench  -test 8 > name_of_the_log.log
+ ```
 ### Figure 14. Multithread read performance regarding avoiding prefetching.
-This generated graph only shows the results on current machine. To compare the results on G1 and G2 Optane, graphs across different machines needs to be collected.
+This generated graph only shows the results on current machine. To compare the results on G1 and G2 Optane, graphs across different machines needs to be collected. Files are tagged with a timestamp in the format of "year-month-day-hour:minute:second".
 |  Figure info   | Contents  |
 |  ----  | ----  |
 | Raw log path  | `tmp/read_throuput_against_prefetch.YYYY-MM-DD-HH:MM:SS.log`  |
 | Formatted data path  |  `output/case_study/read_throuput_against_prefetch.csv`|
 | Graph path  |  `output/case_study/prefetch_multithread_rd_lat.png` and `output/case_study/prefetch_multithread_rd_throughput.png` |
-| Plot script path  | `tools/plot_case_btree.py` |
+| Plot script path  | function `general_task_runner()` in `run.py`  |
 
+The command to run a solitary test::
+ ```
+ numactl -N 0 build_benchmark/microbench  -test 9 > name_of_the_log.log
+ ```
 ## Notion
 When the machine boots up, there could be unintended read or write operation on the DIMMs. If you observe strange spikes on the graph, you could wait for some time and run the code again.
 
