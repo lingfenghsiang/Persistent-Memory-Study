@@ -1,7 +1,7 @@
 # Persistent memory study
 Implementation of the paper:
 
-Lingfeng Xiang, Xingsheng Zhao, Jia Rao, Song Jiang and Hong Jiang, **“Characterizing the Performance of Intel Optane Persistent Memory -- A Close Look at its On-DIMM Buffering,”** accepted to appear in Proceedings of the 2022 EuroSys Conference, April 5-8, 2022, Rennes, France
+Lingfeng Xiang, Xingsheng Zhao, Jia Rao, Song Jiang and Hong Jiang, **“Characterizing the Performance of Intel Optane Persistent Memory -- A Close Look at its On-DIMM Buffering,”** accepted to appear in Proceedings of the EuroSys Conference, April 5-8, 2022, Rennes, France
 
 This repository contains the code for microbenchmarks and case studies. It's recommended to execute the "run.py" script, because it
 compiles the code and generate worloads for case studies. Please see [Usage](#usage).
@@ -41,7 +41,7 @@ To check where the Intel Optane DC PMM mounts, you may use
 ```
 ndctl list -v
 ```
-You could get hints that show. If the node is not 0, please put the PM DIMM on other sockets and try again.
+You could get hints shown below. If the node is not 0, please put the PM DIMM on other sockets and try again.
 ```
 [
   {
@@ -291,7 +291,7 @@ On DRAM
 numactl -N 0 build_benchmark/microbench  -nopmm -test 5 > name_of_the_log.log
 ```
 
-### Figure 8. Latency of different write models long with read.
+### Figure 8. Latency of different write models along with read.
 |  Figure info   | Contents  |
 |  ----  | ----  |
 | Raw log path  | `tmp/task6.log`  |
