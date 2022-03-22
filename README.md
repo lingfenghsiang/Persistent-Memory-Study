@@ -67,7 +67,7 @@ To run the code you need to install these packages:
 ```
 sudo apt install libvmem-dev libpmemobj-dev libssl-dev libgflags-dev libssl-dev numactl cmake openjdk-11-jdk
 ```
-To run our "click-and-run" script, you need to have python and the some package including `pandas`, `matplotlib` and `numpy`.
+To run our "click-and-run" script, you need to have at least python3.9 and the some package including `pandas`, `matplotlib` and `numpy`.
 To set up the environment, it's encouraged to use [`conda`](https://docs.anaconda.com/anaconda/install/linux/#installing-on-linux).
 
 You may install the package via:
@@ -140,7 +140,7 @@ git submodule update
 ### Click and Run
 Run the code by
 ```
-python3 run.py
+/home/your_name/anaconda/bin/python3 run.py
 ```
 You should run the command as root user, bacause getting the DIMM information requires that.
 When the execution is over, data and graphs will be generated in folder [output](output).
@@ -167,7 +167,7 @@ You need to follow the steps in correct order:
 >
 >> Comment all steps except step 1 (line 497-499)
 >
->> Run "python3 run.py".
+>> Run "/home/your_name/anaconda/bin/python3 run.py".
 
 
 > Step 2. This step may test multiple prefetchers and each round takes 15 minutes and 16GB space on Intel Optane DC PMM. 
@@ -181,7 +181,7 @@ You need to follow the steps in correct order:
 >
 >> Comment all steps except step 2 (line 500)
 >
->> Run "python3 run.py".
+>> Run "/home/your_name/anaconda/bin/python3 run.py".
 >
 >> Repeat step 2 and test a different prefetcher.
 
@@ -197,13 +197,13 @@ working threads and the string arguement is the folder path of persistent memory
 >
 >> Comment all steps except step 3 (line 501, 502)
 >
->> Run "python3 run.py".
+>> Run "/home/your_name/anaconda/bin/python3 run.py".
 
 
 > Step 4.
 >> Comment all steps except step 4 (line 503, 504)
 >
->> Run "python3 run.py"
+>> Run "/home/your_name/anaconda/bin/python3 run.py"
 
 
 
