@@ -1,7 +1,7 @@
 # Persistent memory study
 Implementation of the paper:
 
-Lingfeng Xiang, Xingsheng Zhao, Jia Rao, Song Jiang and Hong Jiang, **“Characterizing the Performance of Intel Optane Persistent Memory -- A Close Look at its On-DIMM Buffering,”** accepted to appear in Proceedings of the EuroSys Conference, April 5-8, 2022, Rennes, France
+Lingfeng Xiang, Xingsheng Zhao, Jia Rao, Song Jiang and Hong Jiang, [**“Characterizing the Performance of Intel Optane Persistent Memory -- A Close Look at its On-DIMM Buffering,”**](https://dl.acm.org/doi/10.1145/3492321.3519556) in Proceedings of the EuroSys Conference, April 5-8, 2022, Rennes, France
 
 This repository contains the code for microbenchmarks and case studies. It's recommended to execute the "run.py" script, because it
 compiles the code and generate worloads for case studies. Please see [Usage](#usage).
