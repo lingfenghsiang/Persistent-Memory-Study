@@ -228,7 +228,7 @@ For more details about micro-benchmarks (How to run, how is the code organized),
 
 The command to run a solitary test:
 ```
-numactl -N 0 build_benchmark/microbench  -test 0 > name_of_the_log.log
+numactl -N 0 build_benchmark/bin/microbench  -test 0 > name_of_the_log.log
 ```
 
 ### Figure 3. On-DIMM prefetching
@@ -244,7 +244,7 @@ Since multiple prefetchers need to be tested and prefethcers reset in BIOS, file
 
 The command to run a solitary test:
 ```
-numactl -N 0 build_benchmark/microbench  -test 0 > name_of_the_log.log
+numactl -N 0 build_benchmark/bin/microbench  -test 0 > name_of_the_log.log
 ```
 
 ### Figure 4. Write amplification
@@ -257,7 +257,7 @@ numactl -N 0 build_benchmark/microbench  -test 0 > name_of_the_log.log
 
 The command to run a solitary test:
 ```
-numactl -N 0 build_benchmark/microbench  -test 0 > name_of_the_log.log
+numactl -N 0 build_benchmark/bin/microbench  -test 0 > name_of_the_log.log
 ```
 ### Figure 5. Write buffer hit ratio.
 
@@ -284,11 +284,11 @@ The raw data log has a timestamp in the format of "year-month-day-hour:minute:se
 The command to run a solitary test:
 On PM
 ```
-numactl -N 0 build_benchmark/microbench  -test 5 > name_of_the_log.log
+numactl -N 0 build_benchmark/bin/microbench  -test 5 > name_of_the_log.log
 ```
 On DRAM
 ```
-numactl -N 0 build_benchmark/microbench  -nopmm -test 5 > name_of_the_log.log
+numactl -N 0 build_benchmark/bin/microbench  -nopmm -test 5 > name_of_the_log.log
 ```
 
 ### Figure 8. Latency of different write models along with read.
@@ -301,7 +301,7 @@ numactl -N 0 build_benchmark/microbench  -nopmm -test 5 > name_of_the_log.log
 
 The command to run a solitary test:
  ```
- numactl -N 0 build_benchmark/microbench  -test 6 > name_of_the_log.log
+ numactl -N 0 build_benchmark/bin/microbench  -test 6 > name_of_the_log.log
  ```
 
 ### Figure 10. CCEH case study
@@ -353,7 +353,7 @@ This generated graph only shows the results on current machine. To compare the r
 
 The command to run a solitary test::
  ```
- numactl -N 0 build_benchmark/microbench  -test 8 > name_of_the_log.log
+ numactl -N 0 build_benchmark/bin/microbench  -test 8 > name_of_the_log.log
  ```
 ### Figure 14. Multithread read performance regarding avoiding prefetching.
 This generated graph only shows the results on current machine. To compare the results on G1 and G2 Optane, graphs across different machines needs to be collected. Files are tagged with a timestamp in the format of "year-month-day-hour:minute:second".
@@ -366,7 +366,7 @@ This generated graph only shows the results on current machine. To compare the r
 
 The command to run a solitary test::
  ```
- numactl -N 0 build_benchmark/microbench  -test 9 > name_of_the_log.log
+ numactl -N 0 build_benchmark/bin/microbench  -test 9 > name_of_the_log.log
  ```
 ## Notion
 When the machine boots up, there could be unintended read or write operation on the DIMMs. If you observe strange spikes on the graph, you could wait for some time and run the code again.
