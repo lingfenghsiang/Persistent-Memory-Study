@@ -244,7 +244,7 @@ Since multiple prefetchers need to be tested and prefethcers reset in BIOS, file
 
 The command to run a solitary test:
 ```
-numactl -N 1 build_benchmark/microbench  -test 0 > name_of_the_log.log
+numactl -N 0 build_benchmark/microbench  -test 0 > name_of_the_log.log
 ```
 
 ### Figure 4. Write amplification
@@ -257,7 +257,7 @@ numactl -N 1 build_benchmark/microbench  -test 0 > name_of_the_log.log
 
 The command to run a solitary test:
 ```
-numactl -N 2 build_benchmark/microbench  -test 0 > name_of_the_log.log
+numactl -N 0 build_benchmark/microbench  -test 0 > name_of_the_log.log
 ```
 ### Figure 5. Write buffer hit ratio.
 
